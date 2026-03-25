@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Maze Wordle</title>
+  <style>
+    :root {
+      --bg-color: #121213;
+      --text-color: #ffffff;
+      --wall-color: #3a3a3c;
+      --path-color: #d7dadc;
+      --green-color: #538d4e;
+      --yellow-color: #b59f3b;
+      --red-color: #db4848;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      user-select: none;
+      position: relative;
+    }
+
+    h1 {
+      margin: 0 0 5px 0;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #818384;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 450px;
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    #game-board {
+      display: grid;
+      gap: 1.5px;
+      background-color: #000;
+      padding: 4px;
+      border-radius: 8px;
+      width: 90vw;
+      max-width: 450px;
+      height: 90vw;
+      max-height: 450px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell {
+      width: 100%;
+      height: 100%;
+      border-radius: 2px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      position: relative;
+    }
+
+    .wall {
+      background-color: var(--wall-color);
+    }
+
+    .path {
+      background-color: var(--path-color);
+    }
+
+    .green {
+      background-color: var(--green-color);
+      transition: background-color 0.2s ease;
+    }
+
+    .yellow {
+      background-color: var(--yellow-color);
+      transition: background-color 0.2s ease;
+    }
+
+    .red {
+      background-color: var(--red-color);
+      transition: background-color 0.2s ease;
+    }
+
+    .visited {
+      background-color: #787c7e;
+      transition: background-color 0.2s ease;
+    }
+
+    .cell.yellow::after {
+      content: attr(data-attempt);
+      position: absolute;
+      color: rgba(0, 0, 0, 0.75);
+      font-size: 11px;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .cell.red::after {
+      content: attr(data-attempt);
+      position: absolute;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    /* Start and Exit markers */
+    .start {
+      background-color: #4a90e2 !important;
+    }
+
+    .exit {
+      background-color: #9000ff !important;
+    }
+
+    .player {
+      width: 60%;
+      height: 60%;
+      background-color: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    button {
+      background-color: var(--green-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 25px;
+      display: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: filter 0.2s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+      filter: brightness(1.2);
+    }
+
+    #toast {
+      position: fixed;
+      top: 50px;
+      background: #ffffff;
+      color: #000000;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Top Controls */
+    .top-right-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lang-selector {
+      background: #2a2a2c;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .lang-selector select {
+      background: transparent;
+      color: white;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .lang-selector select option {
+      background: #121213;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #121213;
+      border: 1px solid #3a3a3c;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      color: white;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: #818384;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.1s;
+    }
+
+    .close-btn:hover {
+      color: white;
+    }
+
+    .stats-btn {
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: none;
+      background: #2a2a2c;
+      padding: 3px 10px;
+      border-radius: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-content h2 {
+      margin-top: 10px;
+      color: #ffffff;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px) scale(0.9);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Golden Path Line */
+    .golden-path-line {
+      position: absolute;
+      background-color: #00ffff;
+      /* Neon Cyan renk */
+      box-shadow: 0 0 8px #00ffff;
+      z-index: 10;
+      opacity: 0;
+      animation: drawLine 0.3s forwards ease-in-out;
+      border-radius: 4px;
+    }
+
+    @keyframes drawLine {
+      to {
+        opacity: 0.8;
+      }
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 1.1rem;
+      padding: 10px 15px;
+      background: #2a2a2c;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .stat-row span:last-child {
+      color: var(--green-color);
+    }
+
+    #modal-share-btn {
+      display: inline-block;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    #modal-classic-btn {
+      width: 100%;
+    }
+
+    /* Leaderboard */
+    .leaderboard-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 10px 0;
+    }
+
+    .lb-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      margin: 4px 0;
+      background: #2a2a2c;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .lb-row .lb-rank {
+      color: #b59f3b;
+      font-weight: bold;
+      min-width: 30px;
+    }
+
+    .lb-row .lb-name {
+      flex: 1;
+      text-align: left;
+      margin-left: 8px;
+    }
+
+    .lb-row .lb-score {
+      color: var(--green-color);
+      font-weight: bold;
+    }
+
+    .lb-row.lb-you {
+      border: 1px solid var(--green-color);
+    }
+
+    .nickname-input {
+      background: #2a2a2c;
+      border: 1px solid #3a3a3c;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .nickname-input:focus {
+      outline: none;
+      border-color: var(--green-color);
+    }
+
+    .timer-display {
+      color: #b59f3b;
+    }
+
+    /* Movement controls explanation */
+    .instructions {
+      margin-top: 30px;
+      color: #818384;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    kbd {
+      background-color: #3a3a3c;
+      padding: 3px 6px;
+      border-radius: 4px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+  <div class="top-right-controls">
+    <div id="stats-btn" class="stats-btn">📊</div>
+    <div class="lang-selector">
+      <span>🌍</span>
+      <select id="lang-select">
+        <option value="en" selected>EN</option>
+        <option value="tr">TR</option>
+      </select>
+    </div>
+  </div>
+
+  <h1>Maze Wordle</h1>
+  <div class="subtitle" id="date-display"></div>
+  <div id="mode-display"
+    style="font-size: 0.9rem; color: #4a90e2; font-weight: bold; margin-bottom: 15px; cursor: pointer;"></div>
+
+  <div class="info-bar">
+    <div id="attempt-info">Attempt: 1/5</div>
+    <div id="steps-taken">Steps: 0</div>
+    <div id="timer-display" class="timer-display">⏱ 0:00</div>
+    <div id="optimal-steps">Optimal: ?</div>
+  </div>
+
+  <div id="game-board"></div>
+
+  <div class="instructions" id="instructions-text">
+    Use <kbd>WASD</kbd> or <kbd>Arrows</kbd> to move.<br><br>
+    🟩 Optimal Path &nbsp; 🟨 Valid Detour &nbsp; 🟥 Dead End
+  </div>
+
+  <div id="result-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-modal">&times;</span>
+      <h2 id="modal-title">Game Over!</h2>
+      <div id="modal-stats"></div>
+      <button id="modal-share-btn" style="margin-bottom: 10px;">Share Today's Result 🔗</button>
+      <button id="modal-classic-btn" style="background-color: #4a90e2; display: none;">Play Classic Mode ♾️</button>
+      <hr id="daily-hr" style="border-color: #3a3a3c; margin: 15px 0;">
+      <div id="daily-leaderboard-section">
+        <input type="text" id="nickname-input" class="nickname-input" placeholder="Enter nickname..." maxlength="15">
+        <button id="modal-submit-score"
+          style="background-color: #b59f3b; display: inline-block; width: 100%; margin-top: 0;">Submit to Leaderboard
+          🏅</button>
+        <button id="modal-show-lb"
+          style="background-color: #3a3a3c; display: inline-block; width: 100%; margin-top: 10px;">View Leaderboard
+          🏆</button>
+      </div>
+      <div id="classic-buttons-section" style="display: none;">
+        <button id="modal-next-maze"
+          style="background-color: #538d4e; display: inline-block; width: 100%; margin-top: 0;">Next Maze ➡️</button>
+        <button id="modal-back-daily"
+          style="background-color: #4a90e2; display: inline-block; width: 100%; margin-top: 10px;">Return to Daily
+          🏠</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="leaderboard-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-lb">&times;</span>
+      <h2>🏆 Leaderboard</h2>
+      <div id="lb-date" style="color: #818384; margin-bottom: 10px;"></div>
+      <div id="leaderboard-list" class="leaderboard-list"></div>
+    </div>
+  </div>
+
+  <div id="toast">Copied to clipboard!</div>
+
+  <script>
+    // --- 0. I18N DICTIONARY ---
+    const i18n = {
+      en: {
+        instructions: "Use <kbd>WASD</kbd> or <kbd>Arrows</kbd> to move. <kbd>R</kbd> to restart.<br><br>🟩 Target Path &nbsp; 🟨 Close (1-2 steps) &nbsp; 🟥 Far",
+        attempt: "Attempt: {0}/5",
+        steps: "Steps: {0}",
+        optimal: "Target: {0}",
+        win: "Great Job! 🏆",
+        lose: "Maybe Tomorrow... 💀",
+        shareBtn: "Share Today's Result 🔗",
+        copied: "Copied to clipboard!",
+        statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
+        shareTitle: "Daily Maze Wordle",
+        shareRow: "Attempt {0}: {1}% Correct",
+        playNow: "Play now at [URL]",
+        classicBtn: "Play Classic Mode ♾️",
+        modeDaily: "Daily",
+        modeClassic: "Classic",
+        restart: "Press R to restart attempt"
+      },
+      tr: {
+        instructions: "Hareket: <kbd>WASD</kbd> veya <kbd>Ok Tuşları</kbd>. Başa dön: <kbd>R</kbd>.<br><br>🟩 Hedef Yol &nbsp; 🟨 Yakın (1-2 adım) &nbsp; 🟥 Uzak",
+        attempt: "Deneme: {0}/5",
+        steps: "Adım: {0}",
+        optimal: "Hedef: {0}",
+        win: "Harika İş Çıkardın! 🏆",
+        lose: "Belki Yarın... 💀",
+        shareBtn: "Bugünün Sonucunu Paylaş 🔗",
+        copied: "Panoya kopyalandı!",
+        statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
+        shareTitle: "Günlük Labirent Wordle",
+        shareRow: "{0}. Deneme: %{1} Doğru",
+        playNow: "Hemen oyna: [URL]",
+        classicBtn: "Klasik Mod Oyna ♾️",
+        modeDaily: "Günlük",
+        modeClassic: "Klasik",
+        restart: "Başa dönmek için R'ye bas"
+      }
+    };
+    let currentLang = 'en';
+    function t(key, ...args) {
+      let str = i18n[currentLang][key] || "";
+      args.forEach((arg, i) => { str = str.replace(`{${i}}`, arg); });
+      return str;
+    }
+
+    let lastGameIsWin = false;
+    let currentGameMode = 'daily';
+
+    function updateTexts() {
+      document.getElementById('instructions-text').innerHTML = t('instructions');
+      document.getElementById('attempt-info').innerText = t('attempt', attempts);
+      document.getElementById('steps-taken').innerText = t('steps', steps);
+      if (goldenPathArray && goldenPathArray.length > 0) {
+        document.getElementById('optimal-steps').innerText = t('optimal', goldenPathArray.length - 1);
+      }
+      document.getElementById('modal-share-btn').innerText = t('shareBtn');
+      document.getElementById('modal-classic-btn').innerText = t('classicBtn');
+      document.getElementById('mode-display').innerText = currentGameMode === 'classic' ? '← ' + t('modeDaily') : t('modeDaily');
+      document.getElementById('toast').innerText = t('copied');
+
+      if (gameOver) {
+        document.getElementById('modal-title').innerText = lastGameIsWin ? t('win') : t('lose');
+        const statsDiv = document.getElementById('modal-stats');
+        statsDiv.innerHTML = '';
+        attemptScores.forEach(score => {
+          statsDiv.innerHTML += `<div class="stat-row">${t('statRow', score.attempt, score.percent)}</div>`;
+        });
+      }
+    }
+
+    document.getElementById('lang-select').addEventListener('change', (e) => {
+      currentLang = e.target.value;
+      updateTexts();
+    });
+
+    // --- 1. CORE UTILS: Seeded Random ---
+    // Uses Mulberry32 PRNG seeded by today's date
+    function mulberry32(a) {
+      return function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      }
+    }
+
+    function hashString(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash = hash & hash;
+      }
+      return hash >>> 0;
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    document.getElementById('date-display').innerText = todayStr;
+
+    // --- GLOBAL GAME STATE ---
+    let random;
+    let W = 31, H = 31;
+    let maze = [];
+    let START_POS = { x: 1, y: 1 };
+    let END_POS = { x: 29, y: 29 };
+    let goldenPathArray = [];
+    let goldenPathMap = {};
+    let playerX = 1, playerY = 1;
+    let steps = 0;
+    let gameOver = false;
+    let isAnimating = false;
+    let attempts = 1;
+    const MAX_ATTEMPTS = 5;
+    let currentAttemptPath = [];
+    let attemptScores = [];
+    let visitedMap = new Set();
+    let timerStart = 0;
+    let timerInterval = null;
+    let finalTime = 0;
+    let scoreSubmitted = false;
+    let timerStarted = false;
+
+    // --- 2. MAZE GENERATION ---
+
+    // Generate perfect maze using Recursive Backtracking
+    function generatePerfectMaze(cx, cy) {
+      maze[cy][cx] = 0;
+      let dirs = [[0, -2], [2, 0], [0, 2], [-2, 0]];
+      // Shuffle directions using seeded PRNG
+      for (let i = dirs.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+      }
+
+      for (let d of dirs) {
+        let nx = cx + d[0];
+        let ny = cy + d[1];
+        // Ensure we don't go out of bounds (keep outer walls intact)
+        if (nx > 0 && nx < W - 1 && ny > 0 && ny < H - 1 && maze[ny][nx] === 1) {
+          maze[cy + d[1] / 2][cx + d[0] / 2] = 0; // Knock down wall between
+          generatePerfectMaze(nx, ny);
+        }
+      }
+    }
+
+    // Start recursive backtracking from (1, 1) — called inside initGame
+
+    // Add loops to the maze so YELLOW paths are theoretically possible
+    // (In a perfect tree maze, any misstep is a dead end. Loops allow detours).
+    // wallsToRemove logic is inside initGame
+
+    // --- 3. PATHFINDING ---
+    // Submits a randomized DFS to pick a wild, non-optimal path to add excitement!
+    function findRandomPath(startX, startY, endX, endY) {
+      let visited = new Set();
+      let path = [];
+
+      function dfs(cx, cy) {
+        visited.add(`${cx},${cy}`);
+        path.push(`${cx},${cy}`);
+
+        if (cx === endX && cy === endY) return true;
+
+        let dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+        // Shuffle directions for randomness
+        for (let i = dirs.length - 1; i > 0; i--) {
+          const j = Math.floor(random() * (i + 1));
+          [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+        }
+
+        for (let d of dirs) {
+          let nx = cx + d[0];
+          let ny = cy + d[1];
+          if (nx >= 0 && nx < W && ny >= 0 && ny < H && maze[ny][nx] === 0) {
+            if (!visited.has(`${nx},${ny}`)) {
+              if (dfs(nx, ny)) return true;
+            }
+          }
+        }
+
+        path.pop();
+        return false;
+      }
+
+      dfs(startX, startY);
+      return path;
+    }
+
+    // goldenPathArray is set inside initGame
+
+    // --- 4. RENDER BOARD ---
+    // renderBoard is called inside initGame
+    // --- GAME FUNCTIONS ---
+    function getCell(x, y) { return document.getElementById(`cell-${x}-${y}`); }
+
+    function updatePlayerPosition(x, y) {
+      let oldCell = getCell(playerX, playerY);
+      if (oldCell.innerHTML.includes('player')) oldCell.innerHTML = '';
+
+      playerX = x;
+      playerY = y;
+      steps++;
+      document.getElementById('steps-taken').innerText = `Steps: ${steps}`;
+
+      visitedMap.add(`${playerX},${playerY}`);
+      let newCell = getCell(playerX, playerY);
+
+      // Decide tile color and save it for end reveal
+      let statusColor = evaluateTileColor(playerX, playerY);
+      newCell.dataset.color = statusColor;
+      currentAttemptPath.push({ x: playerX, y: playerY, color: statusColor, cell: newCell });
+
+      // Update tile visual
+      newCell.className = `cell visited ` + (x === END_POS.x && y === END_POS.y ? 'exit' : '');
+      newCell.innerHTML = '<div class="player"></div>';
+
+      if (playerX === END_POS.x && playerY === END_POS.y) {
+        isAnimating = true;
+        let allGreen = true;
+
+        // Add pop effect to cells sequentially 
+        currentAttemptPath.forEach((p, index) => {
+          // Ignore START_POS color because it's always green and shouldn't fail them if the rest was bad?
+          // Actually, if it's all green, then the entire path is green.
+          if (p.color !== 'green') allGreen = false;
+
+          setTimeout(() => {
+            p.cell.className = `cell ${p.color}`;
+            p.cell.dataset.permanentColor = p.color; // Used to restore color if we undo over it later
+
+            if (p.color !== 'green') {
+              p.cell.dataset.attempt = attempts;
+            }
+
+            p.cell.style.transform = 'scale(1.1)';
+            setTimeout(() => p.cell.style.transform = 'scale(1)', 150);
+          }, index * 30);
+        });
+
+        setTimeout(() => {
+          // Record score for this attempt
+          let greenCount = currentAttemptPath.filter(p => p.color === 'green').length;
+          let percent = Math.round((greenCount / currentAttemptPath.length) * 100);
+          attemptScores.push({ attempt: attempts, percent: percent });
+
+          if (allGreen) {
+            gameOver = true;
+            stopTimer();
+            if (currentGameMode === 'daily') {
+              localStorage.setItem('maze-daily-' + todayStr, 'done');
+              localStorage.setItem('maze-scores-' + todayStr, JSON.stringify(attemptScores));
+              localStorage.setItem('maze-time-' + todayStr, finalTime.toString());
+              localStorage.setItem('maze-win-' + todayStr, 'true');
+              setTimeout(() => saveDailyBoardState(), 500);
+            }
+            showModal(true);
+          } else {
+            if (attempts >= MAX_ATTEMPTS) {
+              gameOver = true;
+              lastGameIsWin = false;
+              stopTimer();
+              if (currentGameMode === 'daily') {
+                localStorage.setItem('maze-daily-' + todayStr, 'done');
+                localStorage.setItem('maze-scores-' + todayStr, JSON.stringify(attemptScores));
+                localStorage.setItem('maze-time-' + todayStr, finalTime.toString());
+                localStorage.setItem('maze-win-' + todayStr, 'false');
+              }
+              exposeGoldenPath();
+            } else {
+              // Restart Attempt
+              attempts++;
+              document.getElementById('attempt-info').innerText = t('attempt', attempts);
+              steps = 0;
+              document.getElementById('steps-taken').innerText = t('steps', 0);
+
+              visitedMap.clear();
+              currentAttemptPath = [];
+
+              getCell(playerX, playerY).innerHTML = '';
+              playerX = START_POS.x;
+              playerY = START_POS.y;
+
+              visitedMap.add(`${playerX},${playerY}`);
+              let startCell = getCell(playerX, playerY);
+              startCell.dataset.color = 'green';
+              startCell.dataset.permanentColor = 'green';
+              startCell.className = 'cell green'; // Start is always visible green
+              startCell.innerHTML = '<div class="player"></div>';
+              currentAttemptPath.push({ x: playerX, y: playerY, color: 'green', cell: startCell });
+
+              isAnimating = false;
+            }
+          }
+        }, currentAttemptPath.length * 30 + 300);
+      }
+    }
+
+    function undoPlayerPosition() {
+      if (currentAttemptPath.length <= 1) return; // Cannot undo START_POS
+
+      let popped = currentAttemptPath.pop();
+      let oldCell = popped.cell;
+      oldCell.innerHTML = '';
+      visitedMap.delete(`${popped.x},${popped.y}`);
+
+      oldCell.className = `cell ${oldCell.dataset.permanentColor || 'path'}`;
+
+      let lastStep = currentAttemptPath[currentAttemptPath.length - 1];
+      playerX = lastStep.x;
+      playerY = lastStep.y;
+      steps--;
+      document.getElementById('steps-taken').innerText = t('steps', steps);
+
+      let newCell = lastStep.cell;
+      newCell.className = `cell visited`;
+      newCell.innerHTML = '<div class="player"></div>';
+    }
+
+    function exposeGoldenPath() {
+      let delay = 0;
+      // Fade out slightly all cells to highlight the optimal path
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (maze[y][x] === 0) {
+            getCell(x, y).style.opacity = '0.3';
+          }
+        }
+      }
+
+      goldenPathArray.forEach((posStr, index) => {
+        let [px, py] = posStr.split(',');
+        let cell = getCell(px, py);
+        setTimeout(() => {
+          cell.style.opacity = '1';
+          cell.className = 'cell green';
+          cell.style.transform = 'scale(1.2)';
+          setTimeout(() => cell.style.transform = 'scale(1)', 150);
+        }, delay);
+        delay += 30;
+      });
+
+      // --- YENİ ÇİZGİ ÇİZME MANTIĞI EKLENDİ ---
+      let lineDelay = goldenPathArray.length * 30 + 100;
+      setTimeout(() => {
+        let board = document.getElementById('game-board');
+        for (let i = 0; i < goldenPathArray.length - 1; i++) {
+          let [x1, y1] = goldenPathArray[i].split(',').map(Number);
+          let [x2, y2] = goldenPathArray[i + 1].split(',').map(Number);
+
+          let cell1 = getCell(x1, y1);
+          let cell2 = getCell(x2, y2);
+
+          let line = document.createElement('div');
+          line.className = 'golden-path-line';
+
+          let c1Rect = cell1.getBoundingClientRect();
+          let c2Rect = cell2.getBoundingClientRect();
+          let boardRect = board.getBoundingClientRect();
+
+          // Izgara içindeki mutlak pozisyonu hesapla
+          let top1 = c1Rect.top - boardRect.top + c1Rect.height / 2;
+          let left1 = c1Rect.left - boardRect.left + c1Rect.width / 2;
+          let top2 = c2Rect.top - boardRect.top + c2Rect.height / 2;
+          let left2 = c2Rect.left - boardRect.left + c2Rect.width / 2;
+
+          // Çizgi dikey mi yatay mı?
+          let isVertical = x1 === x2;
+
+          if (isVertical) {
+            line.style.width = '4px';
+            line.style.height = Math.abs(top2 - top1) + 'px';
+            line.style.left = (left1 - 2) + 'px';
+            line.style.top = Math.min(top1, top2) + 'px';
+          } else {
+            line.style.height = '4px';
+            line.style.width = Math.abs(left2 - left1) + 'px';
+            line.style.top = (top1 - 2) + 'px';
+            line.style.left = Math.min(left1, left2) + 'px';
+          }
+
+          // Her segmentin sırayla çizilmesi için animasyon gecikmesi
+          line.style.animationDelay = (i * 15) + 'ms';
+          board.appendChild(line);
+        }
+      }, lineDelay);
+
+      setTimeout(() => {
+        if (currentGameMode === 'daily') saveDailyBoardState();
+        showModal(false);
+      }, lineDelay + (goldenPathArray.length * 15) + 500); // Modal açılışı çizgi bittikten sonra
+    }
+
+    function saveDailyBoardState() {
+      let cellStates = {};
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (maze[y][x] === 0) {
+            let cell = getCell(x, y);
+            let cls = cell.className;
+            let attempt = cell.dataset.attempt || '';
+            let permColor = cell.dataset.permanentColor || '';
+            let opacity = cell.style.opacity || '';
+            if (permColor || cls.includes('green') || cls.includes('yellow') || cls.includes('red') || opacity) {
+              cellStates[`${x},${y}`] = { cls, attempt, permColor, opacity };
+            }
+          }
+        }
+      }
+      localStorage.setItem('maze-board-' + todayStr, JSON.stringify(cellStates));
+    }
+
+    function restoreDailyBoardState() {
+      let saved = localStorage.getItem('maze-board-' + todayStr);
+      if (!saved) return;
+      let cellStates = JSON.parse(saved);
+      for (let key in cellStates) {
+        let [x, y] = key.split(',');
+        let cell = getCell(x, y);
+        let state = cellStates[key];
+        cell.className = state.cls;
+        if (state.attempt) cell.dataset.attempt = state.attempt;
+        if (state.permColor) cell.dataset.permanentColor = state.permColor;
+        if (state.opacity) cell.style.opacity = state.opacity;
+      }
+      // Remove player dot since game is over
+      let startCell = getCell(START_POS.x, START_POS.y);
+      startCell.innerHTML = '';
+    }
+
+    function showModal(isWin) {
+      lastGameIsWin = isWin;
+      const modal = document.getElementById('result-modal');
+      const statsDiv = document.getElementById('modal-stats');
+      document.getElementById('modal-title').innerText = isWin ? t('win') : t('lose');
+
+      statsDiv.innerHTML = '';
+      attemptScores.forEach(score => {
+        statsDiv.innerHTML += `<div class="stat-row">${t('statRow', score.attempt, score.percent)}</div>`;
+      });
+
+      document.getElementById('stats-btn').style.display = 'block';
+
+      // Show/hide sections based on mode
+      if (currentGameMode === 'classic') {
+        document.getElementById('modal-share-btn').style.display = 'none';
+        document.getElementById('modal-classic-btn').style.display = 'none';
+        document.getElementById('daily-hr').style.display = 'none';
+        document.getElementById('daily-leaderboard-section').style.display = 'none';
+        document.getElementById('classic-buttons-section').style.display = 'block';
+      } else {
+        document.getElementById('modal-share-btn').style.display = 'inline-block';
+        document.getElementById('modal-classic-btn').style.display = 'inline-block';
+        document.getElementById('daily-hr').style.display = 'block';
+        document.getElementById('daily-leaderboard-section').style.display = 'block';
+        document.getElementById('classic-buttons-section').style.display = 'none';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    // Evaluate step status (Heat Radar)
+    function evaluateTileColor(px, py) {
+      if (goldenPathMap[`${px},${py}`]) return 'green';
+
+      // BFS to check distance to ANY golden path tile
+      let queue = [{ x: px, y: py, dist: 0 }];
+      let bfsVisited = new Set([`${px},${py}`]);
+
+      while (queue.length > 0) {
+        let { x, y, dist } = queue.shift();
+
+        if (dist >= 2) continue; // Stops expanding if current cell is already 2 steps away
+
+        let dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+        for (let d of dirs) {
+          let nx = x + d[0];
+          let ny = y + d[1];
+          if (nx >= 0 && nx < W && ny >= 0 && ny < H && maze[ny][nx] === 0) {
+            let nKey = `${nx},${ny}`;
+            if (goldenPathMap[nKey]) {
+              return 'yellow'; // Target found within 2 steps
+            }
+            if (!bfsVisited.has(nKey)) {
+              bfsVisited.add(nKey);
+              queue.push({ x: nx, y: ny, dist: dist + 1 });
+            }
+          }
+        }
+      }
+
+      return 'red'; // Target is further than 2 steps
+    }
+
+    // --- INIT GAME FUNCTION ---
+    function initGame(mode) {
+      currentGameMode = mode;
+
+      let seedVal = mode === 'classic' ? Math.floor(Math.random() * 4294967296) : hashString(todayStr);
+      random = mulberry32(seedVal);
+
+      W = 31; H = 31;
+      maze = Array.from({ length: H }, () => Array(W).fill(1));
+      generatePerfectMaze(1, 1);
+
+      let wallsToRemove = 80;
+      let maxTries = 500;
+      while (wallsToRemove > 0 && maxTries > 0) {
+        maxTries--;
+        let rx = 2 + Math.floor(random() * (W - 4));
+        let ry = 2 + Math.floor(random() * (H - 4));
+        if (maze[ry][rx] === 1) {
+          let vertical = maze[ry - 1][rx] === 0 && maze[ry + 1][rx] === 0;
+          let horizontal = maze[ry][rx - 1] === 0 && maze[ry][rx + 1] === 0;
+          if ((vertical && !horizontal) || (horizontal && !vertical)) {
+            maze[ry][rx] = 0;
+            wallsToRemove--;
+          }
+        }
+      }
+
+      START_POS = { x: 1, y: 1 };
+      END_POS = { x: W - 2, y: H - 2 };
+
+      goldenPathArray = findRandomPath(START_POS.x, START_POS.y, END_POS.x, END_POS.y);
+      goldenPathMap = {};
+      goldenPathArray.forEach(p => goldenPathMap[p] = true);
+
+      // Render board
+      const board = document.getElementById('game-board');
+      board.innerHTML = '';
+      board.style.gridTemplateColumns = `repeat(${W}, 1fr)`;
+      board.style.gridTemplateRows = `repeat(${H}, 1fr)`;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          let cell = document.createElement('div');
+          cell.id = `cell-${x}-${y}`;
+          cell.className = maze[y][x] === 1 ? 'cell wall' : 'cell path';
+          if (x === START_POS.x && y === START_POS.y) cell.style.backgroundColor = '#4a90e2';
+          if (x === END_POS.x && y === END_POS.y) cell.style.backgroundColor = '#9000ff';
+          board.appendChild(cell);
+        }
+      }
+
+      // Reset game state
+      playerX = START_POS.x;
+      playerY = START_POS.y;
+      steps = 0;
+      gameOver = false;
+      isAnimating = false;
+      attempts = 1;
+      currentAttemptPath = [];
+      attemptScores = [];
+      visitedMap = new Set();
+
+      // Place player
+      visitedMap.add(`${playerX},${playerY}`);
+      let startCell = getCell(playerX, playerY);
+      startCell.classList.add('visited');
+      startCell.dataset.color = 'green';
+      startCell.dataset.permanentColor = 'green';
+      startCell.innerHTML = '<div class="player"></div>';
+      currentAttemptPath.push({ x: playerX, y: playerY, color: 'green', cell: startCell });
+
+      updateTexts();
+
+      // Reset timer (don't start yet — starts on first move)
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      timerStart = 0;
+      finalTime = 0;
+      timerStarted = false;
+      scoreSubmitted = false;
+      document.getElementById('timer-display').innerText = '⏱ 0:00';
+    }
+
+    function resetCurrentAttempt() {
+      // Clear current gray visited cells, but keep colored hints from previous attempts
+      currentAttemptPath.forEach(p => {
+        let cell = p.cell;
+        cell.innerHTML = '';
+        // If this cell had a permanent color from a previous attempt, restore it
+        if (cell.dataset.permanentColor) {
+          cell.className = `cell ${cell.dataset.permanentColor}`;
+        } else {
+          cell.className = 'cell path';
+        }
+      });
+
+      // Restore start/end colors
+      let sCell = getCell(START_POS.x, START_POS.y);
+      sCell.style.backgroundColor = '#4a90e2';
+      let eCell = getCell(END_POS.x, END_POS.y);
+      eCell.style.backgroundColor = '#9000ff';
+
+      // Reset state
+      visitedMap.clear();
+      currentAttemptPath = [];
+      steps = 0;
+      playerX = START_POS.x;
+      playerY = START_POS.y;
+      document.getElementById('steps-taken').innerText = t('steps', 0);
+
+      // Place player at start
+      visitedMap.add(`${playerX},${playerY}`);
+      let startCell = getCell(playerX, playerY);
+      startCell.dataset.color = 'green';
+      startCell.dataset.permanentColor = 'green';
+      startCell.className = 'cell green';
+      startCell.innerHTML = '<div class="player"></div>';
+      currentAttemptPath.push({ x: playerX, y: playerY, color: 'green', cell: startCell });
+    }
+
+    // --- 6. INPUT CONTROLS ---
+    document.addEventListener('keydown', (e) => {
+      if (gameOver || isAnimating) return;
+
+      // Start timer on first move
+      if (!timerStarted) {
+        timerStarted = true;
+        timerStart = Date.now();
+        timerInterval = setInterval(() => {
+          let elapsed = Math.floor((Date.now() - timerStart) / 1000);
+          let mins = Math.floor(elapsed / 60);
+          let secs = elapsed % 60;
+          document.getElementById('timer-display').innerText = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
+        }, 1000);
+      }
+
+      let dx = 0; let dy = 0;
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dy = -1;
+      else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dy = 1;
+      else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dx = -1;
+      else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dx = 1;
+      else if (e.key === 'r' || e.key === 'R') { resetCurrentAttempt(); return; }
+      else return; // unmapped key
+
+      let nx = playerX + dx;
+      let ny = playerY + dy;
+
+      // Wall collision
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H && maze[ny][nx] === 0) {
+        let prevStep = currentAttemptPath.length > 1 ? currentAttemptPath[currentAttemptPath.length - 2] : null;
+        if (prevStep && nx === prevStep.x && ny === prevStep.y) {
+          undoPlayerPosition();
+        } else {
+          if (currentAttemptPath.some(p => p.x === nx && p.y === ny)) return; // Prevent crossing active path
+          updatePlayerPosition(nx, ny);
+        }
+      }
+    });
+
+    // --- 7. SHARE RESULT ---
+    document.getElementById('modal-share-btn').addEventListener('click', () => {
+      let shareText = `${t('shareTitle')} - ${todayStr}\n\n`;
+      attemptScores.forEach(score => {
+        shareText += `${t('shareRow', score.attempt, score.percent)}\n`;
+      });
+      shareText += `\n${t('playNow')}`;
+
+      navigator.clipboard.writeText(shareText).then(() => {
+        let toast = document.getElementById('toast');
+        toast.innerText = t('copied');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    });
+
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('result-modal').style.display = 'none';
+    });
+
+    document.getElementById('stats-btn').addEventListener('click', () => {
+      document.getElementById('result-modal').style.display = 'flex';
+    });
+
+    window.addEventListener('click', (e) => {
+      const modal = document.getElementById('result-modal');
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    document.getElementById('modal-classic-btn').addEventListener('click', () => {
+      document.getElementById('result-modal').style.display = 'none';
+      initGame('classic');
+    });
+
+    document.getElementById('modal-next-maze').addEventListener('click', () => {
+      document.getElementById('result-modal').style.display = 'none';
+      initGame('classic');
+    });
+
+    document.getElementById('modal-back-daily').addEventListener('click', () => {
+      document.getElementById('result-modal').style.display = 'none';
+      returnToDaily();
+    });
+
+    function returnToDaily() {
+      initGame('daily');
+      if (localStorage.getItem('maze-daily-' + todayStr) === 'done') {
+        gameOver = true;
+        stopTimer();
+        document.getElementById('timer-display').innerText = '✅ Done';
+        let savedScores = localStorage.getItem('maze-scores-' + todayStr);
+        if (savedScores) attemptScores = JSON.parse(savedScores);
+        let savedTime = localStorage.getItem('maze-time-' + todayStr);
+        if (savedTime) finalTime = parseInt(savedTime);
+        restoreDailyBoardState();
+        showModal(localStorage.getItem('maze-win-' + todayStr) === 'true');
+      }
+    }
+
+    document.getElementById('mode-display').addEventListener('click', () => {
+      if (currentGameMode === 'classic') {
+        returnToDaily();
+      }
+    });
+
+    // --- 8. FIREBASE & LEADERBOARD ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2_stQxzuOpf-f1jwYDpRc2xfncK4x0LI",
+      authDomain: "mazle-88759.firebaseapp.com",
+      projectId: "mazle-88759",
+      storageBucket: "mazle-88759.firebasestorage.app",
+      messagingSenderId: "735842920263",
+      appId: "1:735842920263:web:b879c9c0b8313dd23c0e62"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      if (timerStart > 0) {
+        finalTime = Math.floor((Date.now() - timerStart) / 1000);
+      }
+    }
+
+    function calculateScore() {
+      if (attemptScores.length === 0) return 0;
+      let avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length;
+      let attemptBonus = (MAX_ATTEMPTS - attemptScores.length + 1) * 20;
+      let timePenalty = Math.min(finalTime * 0.5, 100);
+      return Math.max(0, Math.round(avgPercent + attemptBonus - timePenalty));
+    }
+
+    async function submitScore(nickname) {
+      let score = calculateScore();
+      let avgPercent = Math.round(attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length);
+      try {
+        await db.collection('scores').add({
+          nickname: nickname,
+          score: score,
+          accuracy: avgPercent,
+          attempts: attemptScores.length,
+          time: finalTime,
+          date: todayStr,
+          mode: currentGameMode,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        return score;
+      } catch (e) {
+        console.error('Score submit error:', e);
+        return null;
+      }
+    }
+
+    async function loadLeaderboard() {
+      const lbList = document.getElementById('leaderboard-list');
+      document.getElementById('lb-date').innerText = todayStr;
+      lbList.innerHTML = '<div style="color: #818384; padding: 20px;">Loading...</div>';
+
+      try {
+        const snapshot = await db.collection('scores')
+          .where('date', '==', todayStr)
+          .where('mode', '==', 'daily')
+          .orderBy('score', 'desc')
+          .limit(5)
+          .get();
+
+        if (snapshot.empty) {
+          lbList.innerHTML = '<div style="color: #818384; padding: 20px;">No scores yet today. Be the first! 🚀</div>';
+          return;
+        }
+
+        lbList.innerHTML = '';
+        let rank = 0;
+        let savedNick = localStorage.getItem('maze-nickname') || '';
+        snapshot.forEach(doc => {
+          rank++;
+          let d = doc.data();
+          let mins = Math.floor(d.time / 60);
+          let secs = d.time % 60;
+          let isYou = d.nickname === savedNick;
+          lbList.innerHTML += `<div class="lb-row ${isYou ? 'lb-you' : ''}">
+            <span class="lb-rank">#${rank}</span>
+            <span class="lb-name">${d.nickname}</span>
+            <span class="lb-score">${d.score} pts · ${mins}:${secs.toString().padStart(2, '0')}</span>
+          </div>`;
+        });
+      } catch (e) {
+        console.error('Leaderboard error:', e);
+        lbList.innerHTML = `<div style="color: #db4848; padding: 20px; word-break: break-all; font-size: 0.8rem;">${e.message}</div>`;
+      }
+    }
+
+    document.getElementById('modal-submit-score').addEventListener('click', async () => {
+      if (scoreSubmitted) return;
+      let nickname = document.getElementById('nickname-input').value.trim();
+      if (!nickname) {
+        document.getElementById('nickname-input').style.borderColor = '#db4848';
+        return;
+      }
+      localStorage.setItem('maze-nickname', nickname);
+      document.getElementById('modal-submit-score').innerText = 'Submitting...';
+      let score = await submitScore(nickname);
+      if (score !== null) {
+        scoreSubmitted = true;
+        localStorage.setItem('maze-submitted-' + todayStr, 'true');
+        document.getElementById('modal-submit-score').innerText = `Submitted! Score: ${score} pts ✅`;
+        document.getElementById('modal-submit-score').style.backgroundColor = 'var(--green-color)';
+      } else {
+        document.getElementById('modal-submit-score').innerText = 'Error! Try again';
+      }
+    });
+
+    document.getElementById('modal-show-lb').addEventListener('click', () => {
+      document.getElementById('leaderboard-modal').style.display = 'flex';
+      loadLeaderboard();
+    });
+
+    document.getElementById('close-lb').addEventListener('click', () => {
+      document.getElementById('leaderboard-modal').style.display = 'none';
+    });
+
+    // Restore saved nickname
+    let savedNick = localStorage.getItem('maze-nickname');
+    if (savedNick) document.getElementById('nickname-input').value = savedNick;
+
+    // Check if already submitted today
+    if (localStorage.getItem('maze-submitted-' + todayStr)) {
+      scoreSubmitted = true;
+      document.getElementById('modal-submit-score').innerText = 'Already Submitted ✅';
+      document.getElementById('modal-submit-score').style.backgroundColor = 'var(--green-color)';
+    }
+
+    // Initial boot — check if daily already completed
+    if (localStorage.getItem('maze-daily-' + todayStr) === 'done') {
+      initGame('daily');
+      gameOver = true;
+      stopTimer();
+      document.getElementById('timer-display').innerText = '✅ Done';
+      let savedScores = localStorage.getItem('maze-scores-' + todayStr);
+      if (savedScores) attemptScores = JSON.parse(savedScores);
+      let savedTime = localStorage.getItem('maze-time-' + todayStr);
+      if (savedTime) finalTime = parseInt(savedTime);
+      restoreDailyBoardState();
+      showModal(localStorage.getItem('maze-win-' + todayStr) === 'true');
+    } else {
+      initGame('daily');
+    }
+  </script>
+</body>
+
+</html>
