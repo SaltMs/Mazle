@@ -964,6 +964,9 @@
         shareBtn: "Share Today's Result 🔗",
         submitScoreBtn: "Submit to Leaderboard 🏅",
         viewLbBtn: "View Leaderboard 🏆",
+        submitting: "Submitting...",
+        alreadySubmitted: "Already Submitted ✅",
+        submitError: "Error! Try again",
         copied: "Copied to clipboard!",
         statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
         shareTitle: "Daily Maze Wordle",
@@ -992,6 +995,9 @@
         shareBtn: "Bugünün Sonucunu Paylaş 🔗",
         submitScoreBtn: "Skorumu Gönder 🏅",
         viewLbBtn: "Liderlik Tablosu 🏆",
+        submitting: "Gönderiliyor...",
+        alreadySubmitted: "Zaten Gönderildi ✅",
+        submitError: "Hata! Tekrar dene",
         copied: "Panoya kopyalandı!",
         statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
         shareTitle: "Günlük Labirent Wordle",
@@ -1091,6 +1097,9 @@
       const submitBtn = document.getElementById('modal-submit-score');
       if (submitBtn && !submitBtn.disabled && !localStorage.getItem('maze-submitted-' + todayStr)) {
         submitBtn.innerText = t('submitScoreBtn');
+      }
+      if (submitBtn && submitBtn.disabled && localStorage.getItem('maze-submitted-' + todayStr)) {
+        submitBtn.innerText = t('alreadySubmitted');
       }
       const viewLbBtn = document.getElementById('modal-show-lb');
       if (viewLbBtn) viewLbBtn.innerText = t('viewLbBtn');
@@ -2083,7 +2092,7 @@
       let submitBtn = document.getElementById('modal-submit-score');
       submitBtn.disabled = true; 
       submitBtn.style.pointerEvents = 'none';
-      submitBtn.innerText = 'Submitting...';
+      submitBtn.innerText = t('submitting');
 
       // Artık input'tan değil, sistemin atadığı playerId'den gönderiyoruz
       let score = await submitScore(playerId);
@@ -2096,7 +2105,7 @@
         scoreSubmitted = false;
         submitBtn.disabled = false;
         submitBtn.style.pointerEvents = 'auto';
-        submitBtn.innerText = 'Error! Try again';
+        submitBtn.innerText = t('submitError');
       }
     });
 
@@ -2114,7 +2123,7 @@
     if (localStorage.getItem('maze-submitted-' + todayStr)) {
       scoreSubmitted = true;
       let submitBtn = document.getElementById('modal-submit-score');
-      submitBtn.innerText = 'Already Submitted ✅';
+      submitBtn.innerText = t('alreadySubmitted');
       submitBtn.style.backgroundColor = 'var(--green-color)';
       submitBtn.disabled = true;
       submitBtn.style.pointerEvents = 'none'; // Sayfa yenilendiğinde de tıklanmaz
