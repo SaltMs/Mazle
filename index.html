@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Maze Wordle</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229"
+    crossorigin="anonymous"></script>
   <style>
     :root {
       --bg-color: #121213;
@@ -27,6 +29,115 @@
       padding: 20px;
       user-select: none;
       position: relative;
+    }
+
+    /* Light theme (toggle adds `white-mode` on body) */
+    body.white-mode {
+      --bg-color: #f6f7f8;
+      --text-color: #111827;
+      --wall-color: #c7cbd1;
+      --path-color: #ffffff;
+      --green-color: #2f7d32;
+      --yellow-color: #b08a1d;
+      --red-color: #c62828;
+    }
+
+    body.white-mode .subtitle {
+      color: #4b5563;
+    }
+
+    body.white-mode #game-board {
+      background-color: #e5e7eb;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    body.white-mode .zoom-btn {
+      border: 1px solid rgba(17, 24, 39, 0.15);
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    body.white-mode .theme-selector {
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(17, 24, 39, 0.15);
+    }
+
+    body.white-mode .theme-selector select {
+      color: #111827;
+    }
+
+    body.white-mode .lang-selector {
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(17, 24, 39, 0.15);
+    }
+
+    body.white-mode .lang-selector select {
+      color: #111827;
+    }
+
+    body.white-mode .lang-selector select option {
+      background: #ffffff;
+      color: #111827;
+    }
+
+    body.white-mode .stats-btn {
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(17, 24, 39, 0.15);
+    }
+
+    body.white-mode .modal {
+      background-color: rgba(0, 0, 0, 0.55);
+    }
+
+    body.white-mode .modal-content {
+      background-color: #ffffff;
+      color: #111827;
+      border: 1px solid rgba(17, 24, 39, 0.15);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    body.white-mode .close-btn {
+      color: #6b7280;
+    }
+
+    body.white-mode .close-btn:hover {
+      color: #111827;
+    }
+
+    body.white-mode .stat-row {
+      background: #f3f4f6;
+    }
+
+    body.white-mode .lb-row {
+      background: #f3f4f6;
+    }
+
+    body.white-mode .leaderboard-list {
+      scrollbar-color: rgba(17, 24, 39, 0.35) transparent;
+    }
+
+    body.white-mode .nickname-input {
+      background: #ffffff;
+      border: 1px solid rgba(17, 24, 39, 0.18);
+      color: #111827;
+    }
+
+    body.white-mode .instructions {
+      color: #4b5563;
+    }
+
+    body.white-mode kbd {
+      background-color: #e5e7eb;
+      color: #111827;
+    }
+
+    body.white-mode #toast {
+      background: #111827;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
     }
 
     h1 {
@@ -53,6 +164,49 @@
       font-weight: bold;
     }
 
+    #mode-display {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .mode-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(74, 144, 226, 0.15);
+      color: #4a90e2;
+      border: 1px solid rgba(74, 144, 226, 0.45);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mode-chip.active {
+      background: #4a90e2;
+      color: #ffffff;
+      border-color: #4a90e2;
+    }
+
+    .mode-chip.locked {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    body.white-mode .mode-chip {
+      background: rgba(74, 144, 226, 0.08);
+      color: #1e5fa8;
+      border-color: rgba(74, 144, 226, 0.4);
+    }
+
+    body.white-mode .mode-chip.active {
+      color: #ffffff;
+      background: #4a90e2;
+      border-color: #4a90e2;
+    }
+
     #game-board {
       display: grid;
       gap: 1.5px;
@@ -64,6 +218,73 @@
       height: 90vw;
       max-height: 450px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative; /* Needed for absolutely-positioned golden path lines */
+    }
+
+    #zoom-toolbar {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0 10px; /* Keep slightly below attempt/steps */
+      user-select: none;
+    }
+
+    .zoom-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(18, 18, 19, 0.65);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .zoom-btn:hover {
+      filter: brightness(1.2);
+    }
+
+    .zoom-btn img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      pointer-events: none; /* Let the button click register */
+    }
+
+    .theme-selector {
+      background: #2a2a2c;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .theme-selector select {
+      background: transparent;
+      color: white;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .theme-selector select option {
+      background: #121213;
     }
 
     .cell {
@@ -194,6 +415,22 @@
       transform: translateY(0);
     }
 
+    #contact-footer {
+      position: fixed;
+      left: 14px;
+      bottom: 10px;
+      font-size: 0.75rem;
+      color: #818384;
+      opacity: 0.9;
+      z-index: 900;
+      user-select: text;
+      letter-spacing: 0.2px;
+    }
+
+    body.white-mode #contact-footer {
+      color: #4b5563;
+    }
+
     /* Top Controls */
     .top-right-controls {
       position: absolute;
@@ -202,6 +439,102 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    .top-left-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1100;
+    }
+
+    .howto-btn {
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #2a2a2c;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      user-select: none;
+      padding: 0 12px;
+      font-size: 13px;
+      white-space: nowrap;
+      margin-top: 0; /* override global button margin */
+      text-transform: none; /* override global button uppercase */
+      letter-spacing: normal; /* override global button spacing */
+    }
+
+    .howto-btn:hover {
+      filter: brightness(1.2);
+    }
+
+    body.white-mode .howto-btn {
+      background: #ffffff;
+      color: #111827;
+      border: 1px solid rgba(17, 24, 39, 0.15);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    .howto-body {
+      color: inherit;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .howto-example {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    body.white-mode .howto-example {
+      border-top: 1px solid rgba(17, 24, 39, 0.15);
+    }
+
+    .howto-example-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: inherit;
+    }
+
+    .howto-video-wrap {
+      width: 100%;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+
+    #howto-video {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    body.white-mode #howto-video {
+      background: rgba(17, 24, 39, 0.06);
+      border: 1px solid rgba(17, 24, 39, 0.15);
+    }
+
+    .howto-video-hint {
+      font-size: 0.85rem;
+      color: #818384;
+      text-align: center;
+    }
+
+    body.white-mode .howto-video-hint {
+      color: #4b5563;
     }
 
     .lang-selector {
@@ -439,16 +772,36 @@
     </div>
   </div>
 
+  <div class="top-left-controls">
+    <div class="theme-selector" title="Theme: System / Dark / Light">
+      <span>🖥️</span>
+      <select id="theme-select" aria-label="Theme">
+        <option value="system" selected>System Preferences</option>
+        <option value="dark">DARK</option>
+        <option value="light">LIGHT</option>
+      </select>
+    </div>
+    <button type="button" id="howto-btn" class="howto-btn" title="How to play?">How to play?</button>
+  </div>
+
   <h1>Maze Wordle</h1>
   <div class="subtitle" id="date-display"></div>
-  <div id="mode-display"
-    style="font-size: 0.9rem; color: #4a90e2; font-weight: bold; margin-bottom: 15px; cursor: pointer;"></div>
+  <div id="mode-display"></div>
 
   <div class="info-bar">
     <div id="attempt-info">Attempt: 1/5</div>
     <div id="steps-taken">Steps: 0</div>
     <div id="timer-display" class="timer-display">⏱ 0:00</div>
     <div id="optimal-steps">Optimal: ?</div>
+  </div>
+
+  <div id="zoom-toolbar" aria-label="Maze zoom controls">
+    <button type="button" id="zoom-out-btn" class="zoom-btn" aria-label="Zoom out">
+      <img src="zoom-minus-white.png" alt="-" draggable="false">
+    </button>
+    <button type="button" id="zoom-in-btn" class="zoom-btn" aria-label="Zoom in">
+      <img src="zoom-plus-white.png" alt="+" draggable="false">
+    </button>
   </div>
 
   <div id="game-board"></div>
@@ -467,7 +820,6 @@
       <button id="modal-classic-btn" style="background-color: #4a90e2; display: none;">Play Classic Mode ♾️</button>
       <hr id="daily-hr" style="border-color: #3a3a3c; margin: 15px 0;">
       <div id="daily-leaderboard-section">
-        <input type="text" id="nickname-input" class="nickname-input" placeholder="Enter nickname..." maxlength="15">
         <button id="modal-submit-score"
           style="background-color: #b59f3b; display: inline-block; width: 100%; margin-top: 0;">Submit to Leaderboard
           🏅</button>
@@ -494,18 +846,41 @@
     </div>
   </div>
 
+  <div id="howto-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-howto">&times;</span>
+      <h2 id="howto-title">How to Play</h2>
+      <div id="howto-body" class="howto-body"></div>
+
+      <div class="howto-example">
+        <div class="howto-example-title" id="howto-example-title">Example</div>
+        <div class="howto-video-wrap">
+          <video id="howto-video" controls playsinline preload="metadata"></video>
+          <div class="howto-video-hint" id="howto-video-hint">Add your video source in HTML.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast">Copied to clipboard!</div>
+  <div id="contact-footer">Contactplaymazle.com</div>
 
   <script>
     // --- 0. I18N DICTIONARY ---
     const i18n = {
       en: {
         instructions: "Use <kbd>WASD</kbd> or <kbd>Arrows</kbd> to move. <kbd>R</kbd> to restart.<br><br>🟩 Target Path &nbsp; 🟨 Close (1-2 steps) &nbsp; 🟥 Far",
+        howtoBtn: "How to play?",
+        howtoTitle: "HOW TO PLAY?",
+        howtoBody: "<b>Your goal:</b> Find the hidden daily \"Golden Route\" from the blue start to the purple exit. You have 5 attempts. Move with <kbd>WASD</kbd> or <kbd>Arrow</kbd> keys. Press <kbd>R</kbd> to restart your current attempt.<br><br><b>Important rule:</b> The shortest path to the exit is not always the correct one. The real goal is to discover the single specific route chosen by the game for that day (the Golden Route) as accurately as possible.<br><br><b>What the colors mean:</b><br>When you reach the exit or finish an attempt, the tiles you stepped on are colored based on performance:<br><br>🟩 <b>Green (Perfect):</b> This tile is exactly on the Golden Route.<br><br>🟨 <b>Yellow (Connecting path):</b> You left the main route, but this branch reconnects to the Golden Route later.<br><br>🟥 <b>Red (Dead end):</b> Wrong direction. This path never leads back to the Golden Route. Try other routes.<br><br><b>What do the numbers on tiles mean?</b><br>The numbers on yellow/red tiles do <i>not</i> show distance to the exit. They show which attempt you stepped on that tile (e.g. <b>1</b> means you made that mistake in attempt 1). Use them to avoid repeating the same errors.",
+        howtoExample: "Example",
+        howtoVideoHint: "You can add an example video here.",
         attempt: "Attempt: {0}/5",
         steps: "Steps: {0}",
         optimal: "Target: {0}",
         win: "Great Job! 🏆",
         lose: "Maybe Tomorrow... 💀",
+        classicResult: "Your Score",
         shareBtn: "Share Today's Result 🔗",
         copied: "Copied to clipboard!",
         statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
@@ -515,15 +890,23 @@
         classicBtn: "Play Classic Mode ♾️",
         modeDaily: "Daily",
         modeClassic: "Classic",
+        modeClassicLocked: "Classic mode unlocks after solving Daily.",
+        streakRow: "Streak: {0} day(s)",
         restart: "Press R to restart attempt"
       },
       tr: {
         instructions: "Hareket: <kbd>WASD</kbd> veya <kbd>Ok Tuşları</kbd>. Başa dön: <kbd>R</kbd>.<br><br>🟩 Hedef Yol &nbsp; 🟨 Yakın (1-2 adım) &nbsp; 🟥 Uzak",
+        howtoBtn: "Nasıl oynanır?",
+        howtoTitle: "NASIL OYNANIR?",
+        howtoBody: "<b>Amacın:</b> Mavi başlangıç noktasından mor çıkış noktasına giden, o güne özel gizli \"Altın Rotayı\" bulmak. Toplam 5 deneme hakkın var. Kontrol etmek için <kbd>WASD</kbd> veya <kbd>Yön tuşlarını</kbd> kullanabilirsin. Denemeyi başa sarmak istersen <kbd>R</kbd> tuşuna bas.<br><br><b>Önemli Kural:</b> Çıkışa ulaşan en kısa yol her zaman doğru yol demek değildir! Asıl hedefin, sistemin o gün için belirlediği tek spesifik rotayı (Altın Rotayı) tam isabetle keşfetmektir.<br><br><b>Renklerin Anlamı:</b><br>Çıkışa ulaştığında veya denemeni bitirdiğinde, geçtiğin kareler performansına göre renklenir:<br><br>🟩 <b>Yeşil (Tam İsabet):</b> Harika! Bu kare tam olarak Altın Rota'nın üzerinde.<br><br>🟨 <b>Sarı (Bağlantılı Yol):</b> Ana rotadan çıktın ama tamamen kaybolmadın. Bu sapak ileride bir noktada tekrar doğru rotaya bağlanıyor.<br><br>🟥 <b>Kırmızı (Çıkmaz Sokak):</b> Yanlış yön. Bu yol seni hiçbir şekilde Altın Rota'ya ulaştırmaz, alternatif yolları dene.<br><br><b>Karelerdeki Sayılar Ne İşe Yarar?</b><br>Sarı ve kırmızı karelerin üzerinde yazan sayılar hedefe olan uzaklığı göstermez. O kareden kaçıncı denemende geçtiğini gösterir (Örn: 1 yazıyorsa o hatayı ilk denemende yapmışsındır). Bu sayılar, önceki denemelerinde nerelerden geçtiğini hatırlaman ve aynı hatayı tekrarlamaman için sana rehberlik eder.",
+        howtoExample: "Örnek",
+        howtoVideoHint: "Buraya örnek video ekleyebilirsin.",
         attempt: "Deneme: {0}/5",
         steps: "Adım: {0}",
         optimal: "Hedef: {0}",
         win: "Harika İş Çıkardın! 🏆",
         lose: "Belki Yarın... 💀",
+        classicResult: "Skorun",
         shareBtn: "Bugünün Sonucunu Paylaş 🔗",
         copied: "Panoya kopyalandı!",
         statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
@@ -533,6 +916,8 @@
         classicBtn: "Klasik Mod Oyna ♾️",
         modeDaily: "Günlük",
         modeClassic: "Klasik",
+        modeClassicLocked: "Klasik mod, Günlük çözülünce açılır.",
+        streakRow: "Seri: {0} gün",
         restart: "Başa dönmek için R'ye bas"
       }
     };
@@ -545,6 +930,70 @@
 
     let lastGameIsWin = false;
     let currentGameMode = 'daily';
+    const DAILY_ATTEMPTS_KEY = 'maze-attempts-';
+    const DAILY_STEPS_KEY = 'maze-steps-';
+    const DAILY_STREAK_KEY = 'maze-streak-count';
+    const DAILY_STREAK_LAST_WIN_KEY = 'maze-streak-last-win-date';
+
+    function formatLocalDate(dt) {
+      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+
+    function getYesterdayStr(dateStr) {
+      const [yy, mm, dd] = dateStr.split('-').map(Number);
+      const dt = new Date(yy, mm - 1, dd);
+      dt.setDate(dt.getDate() - 1);
+      return formatLocalDate(dt);
+    }
+
+    function getStoredDailyStreak() {
+      const streak = parseInt(localStorage.getItem(DAILY_STREAK_KEY) || '0', 10);
+      return Number.isNaN(streak) ? 0 : streak;
+    }
+
+    function updateDailyStreakOnWin() {
+      if (currentGameMode !== 'daily') return getStoredDailyStreak();
+      const lastWinDate = localStorage.getItem(DAILY_STREAK_LAST_WIN_KEY);
+      let streak = getStoredDailyStreak();
+
+      // Prevent duplicate increment if same day is "won" again.
+      if (lastWinDate === todayStr) return streak > 0 ? streak : 1;
+
+      const yesterdayStr = getYesterdayStr(todayStr);
+      streak = (lastWinDate === yesterdayStr) ? (streak + 1) : 1;
+      localStorage.setItem(DAILY_STREAK_KEY, String(streak));
+      localStorage.setItem(DAILY_STREAK_LAST_WIN_KEY, todayStr);
+      return streak;
+    }
+
+    function saveDailyCounters() {
+      if (currentGameMode !== 'daily') return;
+      localStorage.setItem(DAILY_ATTEMPTS_KEY + todayStr, String(attempts));
+      localStorage.setItem(DAILY_STEPS_KEY + todayStr, String(steps));
+    }
+
+    function restoreDailyCounters() {
+      const savedAttempts = parseInt(localStorage.getItem(DAILY_ATTEMPTS_KEY + todayStr) || '', 10);
+      const savedSteps = parseInt(localStorage.getItem(DAILY_STEPS_KEY + todayStr) || '', 10);
+      if (!Number.isNaN(savedAttempts) && savedAttempts > 0) attempts = savedAttempts;
+      if (!Number.isNaN(savedSteps) && savedSteps >= 0) steps = savedSteps;
+      document.getElementById('attempt-info').innerText = t('attempt', attempts);
+      document.getElementById('steps-taken').innerText = t('steps', steps);
+    }
+
+    function isClassicUnlocked() {
+      return localStorage.getItem('maze-win-' + todayStr) === 'true';
+    }
+
+    function renderModeSwitch() {
+      const modeDisplay = document.getElementById('mode-display');
+      if (!modeDisplay) return;
+      const unlocked = isClassicUnlocked();
+      modeDisplay.innerHTML = `
+        <span class="mode-chip ${currentGameMode === 'daily' ? 'active' : ''}" data-mode="daily">${t('modeDaily')}</span>
+        <span class="mode-chip ${currentGameMode === 'classic' ? 'active' : ''} ${unlocked ? '' : 'locked'}" data-mode="classic">${t('modeClassic')}${unlocked ? '' : ' 🔒'}</span>
+      `;
+    }
 
     function updateTexts() {
       document.getElementById('instructions-text').innerHTML = t('instructions');
@@ -555,16 +1004,37 @@
       }
       document.getElementById('modal-share-btn').innerText = t('shareBtn');
       document.getElementById('modal-classic-btn').innerText = t('classicBtn');
-      document.getElementById('mode-display').innerText = currentGameMode === 'classic' ? '← ' + t('modeDaily') : t('modeDaily');
+      renderModeSwitch();
       document.getElementById('toast').innerText = t('copied');
+      const howtoBtn = document.getElementById('howto-btn');
+      if (howtoBtn) {
+        howtoBtn.title = t('howtoBtn');
+        howtoBtn.innerText = t('howtoBtn');
+      }
+      const howtoTitle = document.getElementById('howto-title');
+      if (howtoTitle) howtoTitle.innerText = t('howtoTitle');
+      const howtoBody = document.getElementById('howto-body');
+      if (howtoBody) howtoBody.innerHTML = t('howtoBody');
+      const howtoExampleTitle = document.getElementById('howto-example-title');
+      if (howtoExampleTitle) howtoExampleTitle.innerText = t('howtoExample');
+      const howtoVideoHint = document.getElementById('howto-video-hint');
+      if (howtoVideoHint) howtoVideoHint.innerText = t('howtoVideoHint');
 
       if (gameOver) {
-        document.getElementById('modal-title').innerText = lastGameIsWin ? t('win') : t('lose');
+        document.getElementById('modal-title').innerText = currentGameMode === 'classic'
+          ? t('classicResult')
+          : (lastGameIsWin ? t('win') : t('lose'));
         const statsDiv = document.getElementById('modal-stats');
         statsDiv.innerHTML = '';
         attemptScores.forEach(score => {
           statsDiv.innerHTML += `<div class="stat-row">${t('statRow', score.attempt, score.percent)}</div>`;
         });
+        if (currentGameMode === 'daily' && lastGameIsWin) {
+          const streak = getStoredDailyStreak();
+          if (streak > 0) {
+            statsDiv.innerHTML += `<div class="stat-row"><span>${t('streakRow', streak)}</span><span>🔥</span></div>`;
+          }
+        }
       }
     }
 
@@ -622,6 +1092,91 @@
     let finalTime = 0;
     let scoreSubmitted = false;
     let timerStarted = false;
+
+    // --- 0.5 Zoom Controls ---
+    let zoomScale = 1;
+    const ZOOM_MIN = 0.7;
+    const ZOOM_MAX = 2.0;
+    const ZOOM_STEP = 0.1;
+
+    const ZOOM_PLUS_WHITE_SRC = 'zoom-plus-white.png';
+    const ZOOM_MINUS_WHITE_SRC = 'zoom-minus-white.png';
+    const ZOOM_PLUS_BLACK_SRC = 'zoom-plus-black.png';
+    const ZOOM_MINUS_BLACK_SRC = 'zoom-minus-black.png';
+
+    function isSystemLight() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    }
+
+    function updateZoomIconTheme() {
+      const plusImg = document.querySelector('#zoom-in-btn img');
+      const minusImg = document.querySelector('#zoom-out-btn img');
+      if (!plusImg || !minusImg) return;
+
+      const isLight = document.body.classList.contains('white-mode');
+      plusImg.src = isLight ? ZOOM_PLUS_BLACK_SRC : ZOOM_PLUS_WHITE_SRC;
+      minusImg.src = isLight ? ZOOM_MINUS_BLACK_SRC : ZOOM_MINUS_WHITE_SRC;
+    }
+
+    function applyZoom(scale) {
+      zoomScale = scale;
+      const board = document.getElementById('game-board');
+      if (!board) return;
+      // CSS zoom keeps the board and its absolutely-positioned overlays aligned.
+      board.style.zoom = String(zoomScale);
+    }
+
+    function setZoom(nextScale) {
+      const clamped = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, nextScale));
+      applyZoom(clamped);
+    }
+
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    if (zoomInBtn) zoomInBtn.addEventListener('click', () => setZoom(zoomScale + ZOOM_STEP));
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => setZoom(zoomScale - ZOOM_STEP));
+
+    // Prevent page zoom/move on Ctrl + mouse wheel.
+    window.addEventListener('wheel', (e) => {
+      if (e.ctrlKey) e.preventDefault();
+    }, { passive: false, capture: true });
+
+    // Initial zoom
+    applyZoom(zoomScale);
+
+    function applyThemeChoice(choice) {
+      if (choice === 'light') {
+        document.body.classList.add('white-mode');
+      } else if (choice === 'dark') {
+        document.body.classList.remove('white-mode');
+      } else {
+        // system
+        document.body.classList.toggle('white-mode', isSystemLight());
+      }
+      updateZoomIconTheme();
+    }
+
+    const themeSelect = document.getElementById('theme-select');
+    const savedTheme = localStorage.getItem('maze-theme') || 'system';
+    if (themeSelect) {
+      themeSelect.value = savedTheme;
+      themeSelect.addEventListener('change', (e) => {
+        const choice = e.target.value;
+        localStorage.setItem('maze-theme', choice);
+        applyThemeChoice(choice);
+      });
+    }
+
+    // Follow OS theme changes when "system" is selected
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      mq.addEventListener('change', () => {
+        const current = localStorage.getItem('maze-theme') || (themeSelect ? themeSelect.value : 'system');
+        if (current === 'system') applyThemeChoice('system');
+      });
+    }
+
+    applyThemeChoice(savedTheme);
 
     // --- 2. MAZE GENERATION ---
 
@@ -754,6 +1309,8 @@
               localStorage.setItem('maze-scores-' + todayStr, JSON.stringify(attemptScores));
               localStorage.setItem('maze-time-' + todayStr, finalTime.toString());
               localStorage.setItem('maze-win-' + todayStr, 'true');
+              updateDailyStreakOnWin();
+              saveDailyCounters();
               setTimeout(() => saveDailyBoardState(), 500);
             }
             showModal(true);
@@ -767,6 +1324,7 @@
                 localStorage.setItem('maze-scores-' + todayStr, JSON.stringify(attemptScores));
                 localStorage.setItem('maze-time-' + todayStr, finalTime.toString());
                 localStorage.setItem('maze-win-' + todayStr, 'false');
+                saveDailyCounters();
               }
               exposeGoldenPath();
             } else {
@@ -792,6 +1350,7 @@
               currentAttemptPath.push({ x: playerX, y: playerY, color: 'green', cell: startCell });
 
               isAnimating = false;
+              saveDailyCounters();
             }
           }
         }, currentAttemptPath.length * 30 + 300);
@@ -934,12 +1493,20 @@
       lastGameIsWin = isWin;
       const modal = document.getElementById('result-modal');
       const statsDiv = document.getElementById('modal-stats');
-      document.getElementById('modal-title').innerText = isWin ? t('win') : t('lose');
+      document.getElementById('modal-title').innerText = currentGameMode === 'classic'
+        ? t('classicResult')
+        : (isWin ? t('win') : t('lose'));
 
       statsDiv.innerHTML = '';
       attemptScores.forEach(score => {
         statsDiv.innerHTML += `<div class="stat-row">${t('statRow', score.attempt, score.percent)}</div>`;
       });
+      if (currentGameMode === 'daily' && isWin) {
+        const streak = getStoredDailyStreak();
+        if (streak > 0) {
+          statsDiv.innerHTML += `<div class="stat-row"><span>${t('streakRow', streak)}</span><span>🔥</span></div>`;
+        }
+      }
 
       document.getElementById('stats-btn').style.display = 'block';
 
@@ -952,7 +1519,7 @@
         document.getElementById('classic-buttons-section').style.display = 'block';
       } else {
         document.getElementById('modal-share-btn').style.display = 'inline-block';
-        document.getElementById('modal-classic-btn').style.display = 'inline-block';
+        document.getElementById('modal-classic-btn').style.display = isClassicUnlocked() ? 'inline-block' : 'none';
         document.getElementById('daily-hr').style.display = 'block';
         document.getElementById('daily-leaderboard-section').style.display = 'block';
         document.getElementById('classic-buttons-section').style.display = 'none';
@@ -1183,7 +1750,31 @@
       }
     });
 
+    // --- HOW TO PLAY MODAL ---
+    const howtoBtn = document.getElementById('howto-btn');
+    const howtoModal = document.getElementById('howto-modal');
+    const howtoClose = document.getElementById('close-howto');
+
+    if (howtoBtn && howtoModal) {
+      howtoBtn.addEventListener('click', () => {
+        howtoModal.style.display = 'flex';
+      });
+    }
+
+    if (howtoClose && howtoModal) {
+      howtoClose.addEventListener('click', () => {
+        howtoModal.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('click', (e) => {
+      if (howtoModal && e.target === howtoModal) {
+        howtoModal.style.display = 'none';
+      }
+    });
+
     document.getElementById('modal-classic-btn').addEventListener('click', () => {
+      if (!isClassicUnlocked()) return;
       document.getElementById('result-modal').style.display = 'none';
       initGame('classic');
     });
@@ -1198,7 +1789,7 @@
       returnToDaily();
     });
 
-    function returnToDaily() {
+    function returnToDaily(showStatsModal = true) {
       initGame('daily');
       if (localStorage.getItem('maze-daily-' + todayStr) === 'done') {
         gameOver = true;
@@ -1208,18 +1799,55 @@
         if (savedScores) attemptScores = JSON.parse(savedScores);
         let savedTime = localStorage.getItem('maze-time-' + todayStr);
         if (savedTime) finalTime = parseInt(savedTime);
+        restoreDailyCounters();
         restoreDailyBoardState();
-        showModal(localStorage.getItem('maze-win-' + todayStr) === 'true');
+        if (showStatsModal) {
+          showModal(localStorage.getItem('maze-win-' + todayStr) === 'true');
+        }
       }
     }
 
-    document.getElementById('mode-display').addEventListener('click', () => {
-      if (currentGameMode === 'classic') {
-        returnToDaily();
+    document.getElementById('mode-display').addEventListener('click', (e) => {
+      const chip = e.target.closest('.mode-chip');
+      if (!chip) return;
+      const mode = chip.dataset.mode;
+      if (mode === 'daily') {
+        if (currentGameMode === 'classic') returnToDaily(true);
+        return;
+      }
+      if (mode === 'classic') {
+        if (!isClassicUnlocked()) {
+          const toast = document.getElementById('toast');
+          toast.innerText = t('modeClassicLocked');
+          toast.classList.add('show');
+          setTimeout(() => {
+            toast.innerText = t('copied');
+            toast.classList.remove('show');
+          }, 1800);
+          return;
+        }
+        if (currentGameMode !== 'classic') {
+          initGame('classic');
+        }
       }
     });
 
     // --- 8. FIREBASE & LEADERBOARD ---
+    // Emoji yerine her cihazda çalışan garanti bayrak resimleri (FlagCDN)
+    function getFlagHTML(countryCode) {
+      if (!countryCode || countryCode === 'UN') return '🌍';
+      // Ülke kodunu küçük harfe çevirip png çekiyoruz
+      return `<img src="https://flagcdn.com/20x15/${countryCode.toLowerCase()}.png" 
+                   style="vertical-align: middle; border-radius: 2px; margin-right: 6px;" 
+                   alt="${countryCode}">`;
+    }
+
+    // Oyuncuya otomatik ve kalıcı bir Anonim ID ver
+    let playerId = localStorage.getItem('maze-player-id');
+    if (!playerId) {
+      playerId = 'Anon#' + Math.floor(1000 + Math.random() * 9000); // Örn: Anon#4829
+      localStorage.setItem('maze-player-id', playerId);
+    }
     const firebaseConfig = {
       apiKey: "AIzaSyA2_stQxzuOpf-f1jwYDpRc2xfncK4x0LI",
       authDomain: "mazle-88759.firebaseapp.com",
@@ -1243,18 +1871,51 @@
 
     function calculateScore() {
       if (attemptScores.length === 0) return 0;
-      let avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length;
-      let attemptBonus = (MAX_ATTEMPTS - attemptScores.length + 1) * 20;
-      let timePenalty = Math.min(finalTime * 0.5, 100);
-      return Math.max(0, Math.round(avgPercent + attemptBonus - timePenalty));
+
+      const attemptsUsed = attemptScores.length;
+      const avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptsUsed; // 0..100
+
+      // Make timer (finalTime) dominant over attempts.
+      // - timeFactor decreases with time
+      // - attemptPenalty is intentionally weak so faster solves can beat slower/extra attempts
+      const optimalSteps = Math.max(1, (goldenPathArray.length - 1));
+
+      // Clamp baseline so time has comparable weight across different maze sizes/paths.
+      const baselineSeconds = Math.min(240, Math.max(45, Math.round(optimalSteps * 0.9)));
+      const timeFactor = 1 / (1 + (finalTime / baselineSeconds));
+
+      // attemptsUsed: 1..MAX_ATTEMPTS
+      // Weak penalty: w=0.1 => 2 attempts vs 5 attempts only ~27% difference in divisor.
+      const attemptPenalty = 1 + (attemptsUsed - 1) * 0.1;
+
+      // Score scaling: accuracy (percent) still matters, but time drives ranking.
+      const accuracyFactor = avgPercent / 100; // 0..1
+      const raw = (1000 * accuracyFactor * timeFactor) / attemptPenalty;
+
+      return Math.max(0, Math.round(raw));
     }
 
     async function submitScore(nickname) {
       let score = calculateScore();
       let avgPercent = Math.round(attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length);
+      
+      // --- YENİ EKLENEN KONUM BULMA KODU ---
+      let countryCode = 'UN'; // Varsayılan: Bilinmiyor
+      try {
+        const res = await fetch('https://get.geojs.io/v1/ip/country.json');
+        const data = await res.json();
+        if (data && data.country) {
+          countryCode = data.country; // "TR", "US" gibi bir değer döner
+        }
+      } catch (e) {
+        console.warn('Ülke kodu alınamadı:', e);
+      }
+      // ------------------------------------
+
       try {
         await db.collection('scores').add({
           nickname: nickname,
+          country: countryCode, // Firebase'e ülke kodunu da ekliyoruz
           score: score,
           accuracy: avgPercent,
           attempts: attemptScores.length,
@@ -1290,16 +1951,17 @@
 
         lbList.innerHTML = '';
         let rank = 0;
-        let savedNick = localStorage.getItem('maze-nickname') || '';
         snapshot.forEach(doc => {
           rank++;
           let d = doc.data();
           let mins = Math.floor(d.time / 60);
           let secs = d.time % 60;
-          let isYou = d.nickname === savedNick;
+          let isYou = d.nickname === playerId; // Kendi skorunu vurgulamak için
+          let flagHTML = getFlagHTML(d.country); // Bayrak resmini al
+
           lbList.innerHTML += `<div class="lb-row ${isYou ? 'lb-you' : ''}">
             <span class="lb-rank">#${rank}</span>
-            <span class="lb-name">${d.nickname}</span>
+            <span class="lb-name" style="display:flex; align-items:center;">${flagHTML} ${d.nickname}</span>
             <span class="lb-score">${d.score} pts · ${mins}:${secs.toString().padStart(2, '0')}</span>
           </div>`;
         });
@@ -1311,21 +1973,25 @@
 
     document.getElementById('modal-submit-score').addEventListener('click', async () => {
       if (scoreSubmitted) return;
-      let nickname = document.getElementById('nickname-input').value.trim();
-      if (!nickname) {
-        document.getElementById('nickname-input').style.borderColor = '#db4848';
-        return;
-      }
-      localStorage.setItem('maze-nickname', nickname);
-      document.getElementById('modal-submit-score').innerText = 'Submitting...';
-      let score = await submitScore(nickname);
+
+      scoreSubmitted = true;
+      let submitBtn = document.getElementById('modal-submit-score');
+      submitBtn.disabled = true; 
+      submitBtn.style.pointerEvents = 'none';
+      submitBtn.innerText = 'Submitting...';
+
+      // Artık input'tan değil, sistemin atadığı playerId'den gönderiyoruz
+      let score = await submitScore(playerId);
+
       if (score !== null) {
-        scoreSubmitted = true;
         localStorage.setItem('maze-submitted-' + todayStr, 'true');
-        document.getElementById('modal-submit-score').innerText = `Submitted! Score: ${score} pts ✅`;
-        document.getElementById('modal-submit-score').style.backgroundColor = 'var(--green-color)';
+        submitBtn.innerText = `Submitted! Score: ${score} pts ✅`;
+        submitBtn.style.backgroundColor = 'var(--green-color)';
       } else {
-        document.getElementById('modal-submit-score').innerText = 'Error! Try again';
+        scoreSubmitted = false;
+        submitBtn.disabled = false;
+        submitBtn.style.pointerEvents = 'auto';
+        submitBtn.innerText = 'Error! Try again';
       }
     });
 
@@ -1338,15 +2004,15 @@
       document.getElementById('leaderboard-modal').style.display = 'none';
     });
 
-    // Restore saved nickname
-    let savedNick = localStorage.getItem('maze-nickname');
-    if (savedNick) document.getElementById('nickname-input').value = savedNick;
-
+    // Check if already submitted today
     // Check if already submitted today
     if (localStorage.getItem('maze-submitted-' + todayStr)) {
       scoreSubmitted = true;
-      document.getElementById('modal-submit-score').innerText = 'Already Submitted ✅';
-      document.getElementById('modal-submit-score').style.backgroundColor = 'var(--green-color)';
+      let submitBtn = document.getElementById('modal-submit-score');
+      submitBtn.innerText = 'Already Submitted ✅';
+      submitBtn.style.backgroundColor = 'var(--green-color)';
+      submitBtn.disabled = true;
+      submitBtn.style.pointerEvents = 'none'; // Sayfa yenilendiğinde de tıklanmaz
     }
 
     // Initial boot — check if daily already completed
@@ -1359,11 +2025,25 @@
       if (savedScores) attemptScores = JSON.parse(savedScores);
       let savedTime = localStorage.getItem('maze-time-' + todayStr);
       if (savedTime) finalTime = parseInt(savedTime);
+      restoreDailyCounters();
       restoreDailyBoardState();
       showModal(localStorage.getItem('maze-win-' + todayStr) === 'true');
     } else {
       initGame('daily');
     }
+
+    // Open How-to-Play on entry (unless another modal is already open)
+    (function openHowToPlayOnBoot() {
+      const howto = document.getElementById('howto-modal');
+      if (!howto) return;
+      const result = document.getElementById('result-modal');
+      const lb = document.getElementById('leaderboard-modal');
+      const resultOpen = result && result.style.display === 'flex';
+      const lbOpen = lb && lb.style.display === 'flex';
+      if (!resultOpen && !lbOpen) {
+        howto.style.display = 'flex';
+      }
+    })();
   </script>
 </body>
 
