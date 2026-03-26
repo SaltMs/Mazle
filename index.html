@@ -19,7 +19,6 @@
   <meta name="google-adsense-account" content="ca-pub-8418885822520229">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229" crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-7QX5YHPT71"></script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7QX5YHPT71"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -857,9 +856,9 @@
     <div class="theme-selector" title="Theme: System / Dark / Light">
       <span>🖥️</span>
       <select id="theme-select" aria-label="Theme">
-        <option value="system" selected>System Preferences</option>
-        <option value="dark">DARK</option>
-        <option value="light">LIGHT</option>
+        <option value="system" selected>System</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
       </select>
     </div>
     <button type="button" id="howto-btn" class="howto-btn" title="How to play?">How to play?</button>
@@ -963,6 +962,8 @@
         lose: "Maybe Tomorrow... 💀",
         classicResult: "Your Score",
         shareBtn: "Share Today's Result 🔗",
+        submitScoreBtn: "Submit to Leaderboard 🏅",
+        viewLbBtn: "View Leaderboard 🏆",
         copied: "Copied to clipboard!",
         statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
         shareTitle: "Daily Maze Wordle",
@@ -989,6 +990,8 @@
         lose: "Belki Yarın... 💀",
         classicResult: "Skorun",
         shareBtn: "Bugünün Sonucunu Paylaş 🔗",
+        submitScoreBtn: "Skorumu Gönder 🏅",
+        viewLbBtn: "Liderlik Tablosu 🏆",
         copied: "Panoya kopyalandı!",
         statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
         shareTitle: "Günlük Labirent Wordle",
@@ -1085,6 +1088,12 @@
       }
       document.getElementById('modal-share-btn').innerText = t('shareBtn');
       document.getElementById('modal-classic-btn').innerText = t('classicBtn');
+      const submitBtn = document.getElementById('modal-submit-score');
+      if (submitBtn && !submitBtn.disabled && !localStorage.getItem('maze-submitted-' + todayStr)) {
+        submitBtn.innerText = t('submitScoreBtn');
+      }
+      const viewLbBtn = document.getElementById('modal-show-lb');
+      if (viewLbBtn) viewLbBtn.innerText = t('viewLbBtn');
       renderModeSwitch();
       document.getElementById('toast').innerText = t('copied');
       const howtoBtn = document.getElementById('howto-btn');
