@@ -240,10 +240,13 @@
       background: rgba(18, 18, 19, 0.65);
       cursor: pointer;
       padding: 0;
-      display: flex;
+      display: flex !important; /* override global button { display:none } */
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      margin-top: 0;
+      text-transform: none;
+      letter-spacing: normal;
     }
 
     .zoom-btn:hover {
@@ -2103,18 +2106,7 @@
       initGame('daily');
     }
 
-    // Open How-to-Play on entry (unless another modal is already open)
-    (function openHowToPlayOnBoot() {
-      const howto = document.getElementById('howto-modal');
-      if (!howto) return;
-      const result = document.getElementById('result-modal');
-      const lb = document.getElementById('leaderboard-modal');
-      const resultOpen = result && result.style.display === 'flex';
-      const lbOpen = lb && lb.style.display === 'flex';
-      if (!resultOpen && !lbOpen) {
-        howto.style.display = 'flex';
-      }
-    })();
+    // How-to-Play opens only via the dedicated button.
   </script>
 </body>
 
