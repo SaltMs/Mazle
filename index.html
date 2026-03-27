@@ -94,11 +94,11 @@
       border: 1px solid rgba(17, 24, 39, 0.15);
     }
 
-    body.white-mode .lang-selector select {
+    body.white-mode .lang-code-display {
       color: #111827;
     }
 
-    body.white-mode .lang-selector select option {
+    body.white-mode .lang-select-overlay option {
       background: #ffffff;
       color: #111827;
     }
@@ -562,28 +562,72 @@
     }
 
     .lang-selector {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 36px;
       background: #2a2a2c;
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 1.1rem;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
     }
 
-    .lang-selector select {
-      background: transparent;
-      color: white;
-      border: none;
-      outline: none;
-      cursor: pointer;
+    .lang-selector-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      position: relative;
+      z-index: 0;
+    }
+
+    .lang-flag-display {
+      display: flex;
+      align-items: center;
+      line-height: 0;
+    }
+
+    .lang-flag-display img {
+      display: block;
+      border-radius: 2px;
+    }
+
+    .lang-code-display {
       font-size: 14px;
       font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+    }
+
+    .lang-select-overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+      border: none;
+      background: transparent;
+      font-size: 16px;
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
     }
 
-    .lang-selector select option {
+    .lang-select-overlay:focus-visible {
+      outline: 2px solid #538d4e;
+      outline-offset: 2px;
+    }
+
+    .lang-select-overlay option {
       background: #121213;
+      color: #ffffff;
     }
 
     /* Modal Styles */
@@ -844,10 +888,16 @@
   <div class="top-right-controls">
     <div id="stats-btn" class="stats-btn">📊</div>
     <div class="lang-selector">
-      <span>🌍</span>
-      <select id="lang-select">
+      <div class="lang-selector-inner" aria-hidden="true">
+        <span id="lang-flag-display" class="lang-flag-display"></span>
+        <span id="lang-code-display" class="lang-code-display">EN</span>
+      </div>
+      <select id="lang-select" class="lang-select-overlay" aria-label="Language" title="Language">
         <option value="en" selected>EN</option>
         <option value="tr">TR</option>
+        <option value="de">DE</option>
+        <option value="fr">FR</option>
+        <option value="es">ES</option>
       </select>
     </div>
   </div>
@@ -920,7 +970,7 @@
   <div id="leaderboard-modal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="close-lb">&times;</span>
-      <h2>🏆 Leaderboard</h2>
+      <h2 id="lb-title">🏆 Leaderboard</h2>
       <div id="lb-date" style="color: #818384; margin-bottom: 10px;"></div>
       <div id="leaderboard-list" class="leaderboard-list"></div>
     </div>
@@ -977,7 +1027,14 @@
         modeClassic: "Classic",
         modeClassicLocked: "Classic mode unlocks after solving Daily.",
         streakRow: "Streak: {0} day(s)",
-        restart: "Press R to restart attempt"
+        restart: "Press R to restart attempt",
+        lbTitle: "🏆 Leaderboard",
+        lbLoading: "Loading...",
+        lbEmpty: "No scores yet today. Be the first! 🚀",
+        nextMazeBtn: "Next Maze ➡️",
+        backDailyBtn: "Return to Daily 🏠",
+        submittedScore: "Submitted! Score: {0} pts ✅",
+        langFlagTitle: "Language"
       },
       tr: {
         instructions: "Hareket: <kbd>WASD</kbd> veya <kbd>Ok Tuşları</kbd>. Başa dön: <kbd>R</kbd>.<br><br>🟩 Hedef Yol &nbsp; 🟨 Yakın (1-2 adım) &nbsp; 🟥 Uzak",
@@ -1008,15 +1065,212 @@
         modeClassic: "Klasik",
         modeClassicLocked: "Klasik mod, Günlük çözülünce açılır.",
         streakRow: "Seri: {0} gün",
-        restart: "Başa dönmek için R'ye bas"
+        restart: "Başa dönmek için R'ye bas",
+        lbTitle: "🏆 Liderlik Tablosu",
+        lbLoading: "Yükleniyor...",
+        lbEmpty: "Bugün henüz skor yok. İlk sen ol! 🚀",
+        nextMazeBtn: "Sonraki Labirent ➡️",
+        backDailyBtn: "Günlüğe Dön 🏠",
+        submittedScore: "Gönderildi! Skor: {0} puan ✅",
+        langFlagTitle: "Dil"
+      },
+      de: {
+        instructions: "Bewege dich mit <kbd>WASD</kbd> oder den <kbd>Pfeiltasten</kbd>. <kbd>R</kbd> startet den Versuch neu.<br><br>🟩 Zielpfad &nbsp; 🟨 Nah (1–2 Schritte) &nbsp; 🟥 Weit",
+        howtoBtn: "Wie spielt man?",
+        howtoTitle: "WIE SPIELT MAN?",
+        howtoBody: "<b>Dein Ziel:</b> Finde die versteckte tägliche „Goldroute“ vom blauen Start zum violetten Ausgang. Du hast 5 Versuche. Bewege dich mit <kbd>WASD</kbd> oder den <kbd>Pfeiltasten</kbd>. Drücke <kbd>R</kbd>, um den aktuellen Versuch neu zu starten.<br><br><b>Wichtige Regel:</b> Der kürzeste Weg zum Ausgang ist nicht immer der richtige. Das eigentliche Ziel ist, die eine vom Spiel für diesen Tag gewählte Route (die Goldroute) möglichst genau zu finden.<br><br><b>Bedeutung der Farben:</b><br>Wenn du den Ausgang erreichst oder einen Versuch beendest, werden die Felder, die du betreten hast, nach Leistung eingefärbt:<br><br>🟩 <b>Grün (Perfekt):</b> Dieses Feld liegt exakt auf der Goldroute.<br><br>🟨 <b>Gelb (Verbindungspfad):</b> Du hast die Hauptroute verlassen, aber dieser Abzweig führt später wieder zur Goldroute zurück.<br><br>🟥 <b>Rot (Sackgasse):</b> Falsche Richtung. Dieser Weg führt nie zurück zur Goldroute. Probiere andere Wege.<br><br><b>Was bedeuten die Zahlen auf den Feldern?</b><br>Die Zahlen auf gelben/roten Feldern zeigen <i>nicht</i> die Entfernung zum Ausgang. Sie zeigen, in welchem Versuch du dieses Feld betreten hast (z. B. <b>1</b> = Fehler im ersten Versuch). Nutze sie, um dieselben Fehler zu vermeiden.",
+        howtoExample: "Beispiel",
+        howtoVideoHint: "Hier kannst du ein Beispielvideo einfügen.",
+        attempt: "Versuch: {0}/5",
+        steps: "Schritte: {0}",
+        optimal: "Ziel: {0}",
+        win: "Großartig! 🏆",
+        lose: "Vielleicht morgen... 💀",
+        classicResult: "Dein Ergebnis",
+        shareBtn: "Ergebnis teilen 🔗",
+        submitScoreBtn: "Zur Bestenliste senden 🏅",
+        viewLbBtn: "Bestenliste ansehen 🏆",
+        submitting: "Wird gesendet...",
+        alreadySubmitted: "Bereits gesendet ✅",
+        submitError: "Fehler! Erneut versuchen",
+        copied: "In die Zwischenablage kopiert!",
+        statRow: "<span>Versuch {0}</span><span>{1}% richtig</span>",
+        shareTitle: "Tägliches Maze Wordle",
+        shareRow: "Versuch {0}: {1}% richtig",
+        playNow: "Jetzt spielen: [URL]",
+        classicBtn: "Klassik-Modus ♾️",
+        modeDaily: "Täglich",
+        modeClassic: "Klassik",
+        modeClassicLocked: "Klassik wird nach dem Lösen des Tagesrätsels freigeschaltet.",
+        streakRow: "Serie: {0} Tag(e)",
+        restart: "R drücken, um den Versuch neu zu starten",
+        lbTitle: "🏆 Bestenliste",
+        lbLoading: "Lädt...",
+        lbEmpty: "Heute noch keine Einträge. Sei der Erste! 🚀",
+        nextMazeBtn: "Nächstes Labyrinth ➡️",
+        backDailyBtn: "Zurück zum Tagesrätsel 🏠",
+        submittedScore: "Gesendet! Punkte: {0} ✅",
+        langFlagTitle: "Sprache"
+      },
+      fr: {
+        instructions: "Déplacez-vous avec <kbd>WASD</kbd> ou les <kbd>flèches</kbd>. <kbd>R</kbd> pour recommencer.<br><br>🟩 Chemin cible &nbsp; 🟨 Proche (1–2 pas) &nbsp; 🟥 Loin",
+        howtoBtn: "Comment jouer ?",
+        howtoTitle: "COMMENT JOUER ?",
+        howtoBody: "<b>Votre objectif :</b> Trouver la « Route d’or » cachée du jour, du départ bleu à la sortie violette. Vous avez 5 essais. Déplacez-vous avec <kbd>WASD</kbd> ou les <kbd>flèches</kbd>. Appuyez sur <kbd>R</kbd> pour recommencer l’essai en cours.<br><br><b>Règle importante :</b> Le plus court chemin vers la sortie n’est pas toujours le bon. Le vrai but est de découvrir l’itinéraire précis choisi par le jeu pour ce jour-là (la Route d’or).<br><br><b>Signification des couleurs :</b><br>Quand vous atteignez la sortie ou terminez un essai, les cases parcourues sont colorées selon vos performances :<br><br>🟩 <b>Vert (parfait) :</b> Cette case est exactement sur la Route d’or.<br><br>🟨 <b>Jaune (liaison) :</b> Vous avez quitté la route principale, mais cette branche rejoint plus tard la Route d’or.<br><br>🟥 <b>Rouge (impasse) :</b> Mauvaise direction. Ce chemin ne mène jamais à la Route d’or. Essayez d’autres voies.<br><br><b>Que signifient les chiffres sur les cases ?</b><br>Les chiffres sur les cases jaunes/rouges n’indiquent <i>pas</i> la distance à la sortie. Ils indiquent lors de quel essai vous êtes passé sur cette case (ex. <b>1</b> = erreur au 1er essai). Servez-vous-en pour ne pas répéter les mêmes fautes.",
+        howtoExample: "Exemple",
+        howtoVideoHint: "Vous pouvez ajouter une vidéo d’exemple ici.",
+        attempt: "Essai : {0}/5",
+        steps: "Pas : {0}",
+        optimal: "Cible : {0}",
+        win: "Bravo ! 🏆",
+        lose: "Peut-être demain... 💀",
+        classicResult: "Votre score",
+        shareBtn: "Partager le résultat du jour 🔗",
+        submitScoreBtn: "Envoyer au classement 🏅",
+        viewLbBtn: "Voir le classement 🏆",
+        submitting: "Envoi...",
+        alreadySubmitted: "Déjà envoyé ✅",
+        submitError: "Erreur ! Réessayez",
+        copied: "Copié dans le presse-papiers !",
+        statRow: "<span>Essai {0}</span><span>{1}% correct</span>",
+        shareTitle: "Maze Wordle du jour",
+        shareRow: "Essai {0} : {1}% correct",
+        playNow: "Jouez sur [URL]",
+        classicBtn: "Mode classique ♾️",
+        modeDaily: "Quotidien",
+        modeClassic: "Classique",
+        modeClassicLocked: "Le mode classique se débloque après le défi du jour.",
+        streakRow: "Série : {0} jour(s)",
+        restart: "Appuyez sur R pour recommencer l’essai",
+        lbTitle: "🏆 Classement",
+        lbLoading: "Chargement...",
+        lbEmpty: "Pas encore de scores aujourd’hui. Soyez le premier ! 🚀",
+        nextMazeBtn: "Labyrinthe suivant ➡️",
+        backDailyBtn: "Retour au défi du jour 🏠",
+        submittedScore: "Envoyé ! Score : {0} pts ✅",
+        langFlagTitle: "Langue"
+      },
+      es: {
+        instructions: "Muévete con <kbd>WASD</kbd> o las <kbd>flechas</kbd>. <kbd>R</kbd> reinicia el intento.<br><br>🟩 Ruta objetivo &nbsp; 🟨 Cerca (1–2 pasos) &nbsp; 🟥 Lejos",
+        howtoBtn: "¿Cómo se juega?",
+        howtoTitle: "¿CÓMO SE JUEGA?",
+        howtoBody: "<b>Tu objetivo:</b> Encontrar la « Ruta dorada » oculta del día, desde el inicio azul hasta la salida morada. Tienes 5 intentos. Muévete con <kbd>WASD</kbd> o las <kbd>flechas</kbd>. Pulsa <kbd>R</kbd> para reiniciar el intento actual.<br><br><b>Regla importante:</b> El camino más corto a la salida no siempre es el correcto. El verdadero objetivo es descubrir la ruta concreta que el juego eligió para ese día (la Ruta dorada).<br><br><b>Qué significan los colores:</b><br>Cuando llegas a la salida o terminas un intento, las casillas que pisaste se colorean según tu rendimiento:<br><br>🟩 <b>Verde (perfecto):</b> Esta casilla está exactamente en la Ruta dorada.<br><br>🟨 <b>Amarillo (conexión):</b> Te saliste de la ruta principal, pero esta rama vuelve a unirse a la Ruta dorada más adelante.<br><br>🟥 <b>Rojo (callejón sin salida):</b> Dirección equivocada. Este camino nunca vuelve a la Ruta dorada. Prueba otros caminos.<br><br><b>¿Qué significan los números en las casillas?</b><br>Los números en casillas amarillas/rojas <i>no</i> muestran la distancia a la salida. Indican en qué intento pisaste esa casilla (p. ej. <b>1</b> = error en el intento 1). Úsalos para no repetir los mismos fallos.",
+        howtoExample: "Ejemplo",
+        howtoVideoHint: "Puedes añadir un vídeo de ejemplo aquí.",
+        attempt: "Intento: {0}/5",
+        steps: "Pasos: {0}",
+        optimal: "Objetivo: {0}",
+        win: "¡Genial! 🏆",
+        lose: "Quizá mañana... 💀",
+        classicResult: "Tu puntuación",
+        shareBtn: "Compartir resultado de hoy 🔗",
+        submitScoreBtn: "Enviar al ranking 🏅",
+        viewLbBtn: "Ver ranking 🏆",
+        submitting: "Enviando...",
+        alreadySubmitted: "Ya enviado ✅",
+        submitError: "¡Error! Inténtalo de nuevo",
+        copied: "¡Copiado al portapapeles!",
+        statRow: "<span>Intento {0}</span><span>{1}% acierto</span>",
+        shareTitle: "Maze Wordle diario",
+        shareRow: "Intento {0}: {1}% acierto",
+        playNow: "Juega en [URL]",
+        classicBtn: "Modo clásico ♾️",
+        modeDaily: "Diario",
+        modeClassic: "Clásico",
+        modeClassicLocked: "El modo clásico se desbloquea al completar el diario.",
+        streakRow: "Racha: {0} día(s)",
+        restart: "Pulsa R para reiniciar el intento",
+        lbTitle: "🏆 Ranking",
+        lbLoading: "Cargando...",
+        lbEmpty: "Aún no hay puntuaciones hoy. ¡Sé el primero! 🚀",
+        nextMazeBtn: "Siguiente laberinto ➡️",
+        backDailyBtn: "Volver al diario 🏠",
+        submittedScore: "¡Enviado! Puntuación: {0} pts ✅",
+        langFlagTitle: "Idioma"
       }
     };
+    const LANG_STORAGE_KEY = 'maze-lang';
+    const SUPPORTED_LANGS = ['en', 'tr', 'de', 'fr', 'es'];
     let currentLang = 'en';
+
+    /** Maps browser/OS locale tags (e.g. de-DE, fr) to a supported game language. */
+    function detectPreferredLangFromNavigator() {
+      const candidates = [];
+      try {
+        if (navigator.languages && navigator.languages.length) {
+          for (let i = 0; i < navigator.languages.length; i++) {
+            candidates.push(navigator.languages[i]);
+          }
+        }
+      } catch (e) { /* ignore */ }
+      if (navigator.language) candidates.push(navigator.language);
+
+      function primaryFromTag(tag) {
+        if (!tag || typeof tag !== 'string') return null;
+        const base = tag.toLowerCase().split('-')[0];
+        if (SUPPORTED_LANGS.indexOf(base) !== -1) return base;
+        return null;
+      }
+
+      for (let j = 0; j < candidates.length; j++) {
+        const m = primaryFromTag(candidates[j]);
+        if (m) return m;
+      }
+      return 'en';
+    }
+
+    /**
+     * If the user has chosen a language before, it is stored and reused.
+     * Otherwise the UI language follows the browser / OS preference (navigator.languages).
+     */
+    function initLang() {
+      let lang = null;
+      try {
+        const saved = localStorage.getItem(LANG_STORAGE_KEY);
+        if (saved && SUPPORTED_LANGS.indexOf(saved) !== -1) lang = saved;
+      } catch (e) { /* ignore */ }
+      if (!lang) lang = detectPreferredLangFromNavigator();
+
+      currentLang = lang;
+      const sel = document.getElementById('lang-select');
+      if (sel) sel.value = currentLang;
+      try {
+        document.documentElement.lang = currentLang;
+      } catch (e) { /* ignore */ }
+      updateLangFlagDisplay();
+    }
     function t(key, ...args) {
-      let str = i18n[currentLang][key] || "";
-      args.forEach((arg, i) => { str = str.replace(`{${i}}`, arg); });
+      const pack = i18n[currentLang] || i18n.en;
+      let str = (pack[key] != null ? pack[key] : i18n.en[key]) || '';
+      args.forEach((arg, i) => { str = String(str).replace(`{${i}}`, arg); });
       return str;
     }
+
+    const LANG_FLAG_COUNTRY = { en: 'gb', tr: 'tr', de: 'de', fr: 'fr', es: 'es' };
+
+    /** Same FlagCDN images as the leaderboard (reliable across devices). */
+    function getFlagHTML(countryCode, marginRight) {
+      if (!countryCode || countryCode === 'UN') return '🌍';
+      const mr = marginRight !== undefined ? marginRight : 6;
+      return `<img src="https://flagcdn.com/20x15/${countryCode.toLowerCase()}.png" 
+                   style="vertical-align: middle; border-radius: 2px; margin-right: ${mr}px;" 
+                   alt="${countryCode}">`;
+    }
+
+    function updateLangFlagDisplay() {
+      const flagEl = document.getElementById('lang-flag-display');
+      const codeEl = document.getElementById('lang-code-display');
+      const sel = document.getElementById('lang-select');
+      if (!flagEl || !codeEl || !sel) return;
+      const cc = LANG_FLAG_COUNTRY[currentLang] || 'gb';
+      flagEl.innerHTML = getFlagHTML(cc, 0);
+      codeEl.textContent = (currentLang || 'en').toUpperCase();
+      const title = t('langFlagTitle');
+      sel.setAttribute('aria-label', title);
+      sel.title = title;
+    }
+
+    initLang();
 
     let lastGameIsWin = false;
     let currentGameMode = 'daily';
@@ -1118,6 +1372,13 @@
       if (howtoExampleTitle) howtoExampleTitle.innerText = t('howtoExample');
       const howtoVideoHint = document.getElementById('howto-video-hint');
       if (howtoVideoHint) howtoVideoHint.innerText = t('howtoVideoHint');
+      const lbTitleEl = document.getElementById('lb-title');
+      if (lbTitleEl) lbTitleEl.innerText = t('lbTitle');
+      const nextMazeBtn = document.getElementById('modal-next-maze');
+      if (nextMazeBtn) nextMazeBtn.innerText = t('nextMazeBtn');
+      const backDailyBtn = document.getElementById('modal-back-daily');
+      if (backDailyBtn) backDailyBtn.innerText = t('backDailyBtn');
+      updateLangFlagDisplay();
 
       if (gameOver) {
         document.getElementById('modal-title').innerText = currentGameMode === 'classic'
@@ -1139,6 +1400,10 @@
 
     document.getElementById('lang-select').addEventListener('change', (e) => {
       currentLang = e.target.value;
+      try {
+        localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+        document.documentElement.lang = currentLang;
+      } catch (err) { /* ignore */ }
       updateTexts();
     });
 
@@ -1947,14 +2212,7 @@
     });
 
     // --- 8. FIREBASE & LEADERBOARD ---
-    // Emoji yerine her cihazda çalışan garanti bayrak resimleri (FlagCDN)
-    function getFlagHTML(countryCode) {
-      if (!countryCode || countryCode === 'UN') return '🌍';
-      // Ülke kodunu küçük harfe çevirip png çekiyoruz
-      return `<img src="https://flagcdn.com/20x15/${countryCode.toLowerCase()}.png" 
-                   style="vertical-align: middle; border-radius: 2px; margin-right: 6px;" 
-                   alt="${countryCode}">`;
-    }
+    // getFlagHTML: shared with language control (defined earlier, FlagCDN)
 
     // Oyuncuya otomatik ve kalıcı bir Anonim ID ver
     let playerId = localStorage.getItem('maze-player-id');
@@ -2048,7 +2306,7 @@
     async function loadLeaderboard() {
       const lbList = document.getElementById('leaderboard-list');
       document.getElementById('lb-date').innerText = todayStr;
-      lbList.innerHTML = '<div style="color: #818384; padding: 20px;">Loading...</div>';
+      lbList.innerHTML = '<div style="color: #818384; padding: 20px;">' + t('lbLoading') + '</div>';
 
       try {
         const snapshot = await db.collection('scores')
@@ -2059,7 +2317,7 @@
           .get();
 
         if (snapshot.empty) {
-          lbList.innerHTML = '<div style="color: #818384; padding: 20px;">No scores yet today. Be the first! 🚀</div>';
+          lbList.innerHTML = '<div style="color: #818384; padding: 20px;">' + t('lbEmpty') + '</div>';
           return;
         }
 
@@ -2099,7 +2357,7 @@
 
       if (score !== null) {
         localStorage.setItem('maze-submitted-' + todayStr, 'true');
-        submitBtn.innerText = `Submitted! Score: ${score} pts ✅`;
+        submitBtn.innerText = t('submittedScore', score);
         submitBtn.style.backgroundColor = 'var(--green-color)';
       } else {
         scoreSubmitted = false;
