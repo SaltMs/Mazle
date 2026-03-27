@@ -7,27 +7,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <title>Mazle - Daily Logic Puzzle</title>
-  <meta name="description" content="Play Mazle - A daily logic and memory puzzle game. Find the hidden path, test your spatial awareness, and compete on the global leaderboard!">
+  <meta name="description"
+    content="Play Mazle - A daily logic and memory puzzle game. Find the hidden path, test your spatial awareness, and compete on the global leaderboard!">
   <meta name="keywords" content="mazle, maze game, wordle alternative, daily puzzle, logic game, memory puzzle">
   <meta name="author" content="PlayMazle">
 
   <meta property="og:title" content="Mazle - Daily Logic Puzzle">
-  <meta property="og:description" content="Can you find the hidden path today? Play the daily maze puzzle and climb the global leaderboard!">
+  <meta property="og:description"
+    content="Can you find the hidden path today? Play the daily maze puzzle and climb the global leaderboard!">
   <meta property="og:url" content="https://playmazle.com">
   <meta property="og:type" content="website">
 
   <meta name="google-adsense-account" content="ca-pub-8418885822520229">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229"
+    crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-7QX5YHPT71"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-7QX5YHPT71');
-</script>
-  
-  
+    gtag('config', 'G-7QX5YHPT71');
+  </script>
+
+
   <style>
     :root {
       --bg-color: #121213;
@@ -239,7 +242,8 @@
       height: 90vw;
       max-height: 450px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      position: relative; /* Needed for absolutely-positioned golden path lines */
+      position: relative;
+      /* Needed for absolutely-positioned golden path lines */
     }
 
     #zoom-toolbar {
@@ -249,7 +253,8 @@
       justify-content: flex-end;
       align-items: center;
       gap: 8px;
-      margin: 4px 0 10px; /* Keep slightly below attempt/steps */
+      margin: 4px 0 10px;
+      /* Keep slightly below attempt/steps */
       user-select: none;
     }
 
@@ -261,7 +266,8 @@
       background: rgba(18, 18, 19, 0.65);
       cursor: pointer;
       padding: 0;
-      display: flex !important; /* override global button { display:none } */
+      display: flex !important;
+      /* override global button { display:none } */
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
@@ -278,7 +284,8 @@
       width: 18px;
       height: 18px;
       object-fit: contain;
-      pointer-events: none; /* Let the button click register */
+      pointer-events: none;
+      /* Let the button click register */
     }
 
     .theme-selector {
@@ -491,9 +498,12 @@
       padding: 0 12px;
       font-size: 13px;
       white-space: nowrap;
-      margin-top: 0; /* override global button margin */
-      text-transform: none; /* override global button uppercase */
-      letter-spacing: normal; /* override global button spacing */
+      margin-top: 0;
+      /* override global button margin */
+      text-transform: none;
+      /* override global button uppercase */
+      letter-spacing: normal;
+      /* override global button spacing */
     }
 
     .howto-btn:hover {
@@ -677,7 +687,8 @@
       padding-right: 6px;
     }
 
-    @media (max-width: 640px), (max-height: 760px) {
+    @media (max-width: 640px),
+    (max-height: 760px) {
       .modal-content {
         width: 94%;
         max-width: 520px;
@@ -914,7 +925,7 @@
     <button type="button" id="howto-btn" class="howto-btn" title="How to play?">How to play?</button>
   </div>
 
-  <h1>Maze Wordle</h1>
+  <h1>Mazle</h1>
   <div class="subtitle" id="date-display"></div>
   <div id="mode-display"></div>
 
@@ -985,8 +996,9 @@
       <div class="howto-example">
         <div class="howto-example-title" id="howto-example-title">Example</div>
         <div class="howto-video-wrap">
-          <video id="howto-video" controls playsinline preload="metadata"></video>
-          <div class="howto-video-hint" id="howto-video-hint">Add your video source in HTML.</div>
+          <video id="howto-video" controls playsinline preload="metadata">
+            <source src="how-to-play.mp4" type="video/mp4">
+          </video>
         </div>
       </div>
     </div>
@@ -1004,7 +1016,6 @@
         howtoTitle: "HOW TO PLAY?",
         howtoBody: "<b>Your goal:</b> Find the hidden daily \"Golden Route\" from the blue start to the purple exit. You have 5 attempts. Move with <kbd>WASD</kbd> or <kbd>Arrow</kbd> keys. Press <kbd>R</kbd> to restart your current attempt.<br><br><b>Important rule:</b> The shortest path to the exit is not always the correct one. The real goal is to discover the single specific route chosen by the game for that day (the Golden Route) as accurately as possible.<br><br><b>What the colors mean:</b><br>When you reach the exit or finish an attempt, the tiles you stepped on are colored based on performance:<br><br>🟩 <b>Green (Perfect):</b> This tile is exactly on the Golden Route.<br><br>🟨 <b>Yellow (Connecting path):</b> You left the main route, but this branch reconnects to the Golden Route later.<br><br>🟥 <b>Red (Dead end):</b> Wrong direction. This path never leads back to the Golden Route. Try other routes.<br><br><b>What do the numbers on tiles mean?</b><br>The numbers on yellow/red tiles do <i>not</i> show distance to the exit. They show which attempt you stepped on that tile (e.g. <b>1</b> means you made that mistake in attempt 1). Use them to avoid repeating the same errors.",
         howtoExample: "Example",
-        howtoVideoHint: "You can add an example video here.",
         attempt: "Attempt: {0}/5",
         steps: "Steps: {0}",
         optimal: "Target: {0}",
@@ -1019,7 +1030,7 @@
         submitError: "Error! Try again",
         copied: "Copied to clipboard!",
         statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
-        shareTitle: "Daily Maze Wordle",
+        shareTitle: "Daily Mazle",
         shareRow: "Attempt {0}: {1}% Correct",
         playNow: "Play now at [URL]",
         classicBtn: "Play Classic Mode ♾️",
@@ -1042,7 +1053,6 @@
         howtoTitle: "NASIL OYNANIR?",
         howtoBody: "<b>Amacın:</b> Mavi başlangıç noktasından mor çıkış noktasına giden, o güne özel gizli \"Altın Rotayı\" bulmak. Toplam 5 deneme hakkın var. Kontrol etmek için <kbd>WASD</kbd> veya <kbd>Yön tuşlarını</kbd> kullanabilirsin. Denemeyi başa sarmak istersen <kbd>R</kbd> tuşuna bas.<br><br><b>Önemli Kural:</b> Çıkışa ulaşan en kısa yol her zaman doğru yol demek değildir! Asıl hedefin, sistemin o gün için belirlediği tek spesifik rotayı (Altın Rotayı) tam isabetle keşfetmektir.<br><br><b>Renklerin Anlamı:</b><br>Çıkışa ulaştığında veya denemeni bitirdiğinde, geçtiğin kareler performansına göre renklenir:<br><br>🟩 <b>Yeşil (Tam İsabet):</b> Harika! Bu kare tam olarak Altın Rota'nın üzerinde.<br><br>🟨 <b>Sarı (Bağlantılı Yol):</b> Ana rotadan çıktın ama tamamen kaybolmadın. Bu sapak ileride bir noktada tekrar doğru rotaya bağlanıyor.<br><br>🟥 <b>Kırmızı (Çıkmaz Sokak):</b> Yanlış yön. Bu yol seni hiçbir şekilde Altın Rota'ya ulaştırmaz, alternatif yolları dene.<br><br><b>Karelerdeki Sayılar Ne İşe Yarar?</b><br>Sarı ve kırmızı karelerin üzerinde yazan sayılar hedefe olan uzaklığı göstermez. O kareden kaçıncı denemende geçtiğini gösterir (Örn: 1 yazıyorsa o hatayı ilk denemende yapmışsındır). Bu sayılar, önceki denemelerinde nerelerden geçtiğini hatırlaman ve aynı hatayı tekrarlamaman için sana rehberlik eder.",
         howtoExample: "Örnek",
-        howtoVideoHint: "Buraya örnek video ekleyebilirsin.",
         attempt: "Deneme: {0}/5",
         steps: "Adım: {0}",
         optimal: "Hedef: {0}",
@@ -1057,7 +1067,7 @@
         submitError: "Hata! Tekrar dene",
         copied: "Panoya kopyalandı!",
         statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
-        shareTitle: "Günlük Labirent Wordle",
+        shareTitle: "Günlük Mazle",
         shareRow: "{0}. Deneme: %{1} Doğru",
         playNow: "Hemen oyna: [URL]",
         classicBtn: "Klasik Mod Oyna ♾️",
@@ -1429,9 +1439,9 @@
 
     // Oyuncunun kendi yerel saatine göre bugünün tarihini al (YYYY-MM-DD)
     let d = new Date();
-    let todayStr = d.getFullYear() + '-' + 
-                 String(d.getMonth() + 1).padStart(2, '0') + '-' + 
-                 String(d.getDate()).padStart(2, '0');
+    let todayStr = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
     document.getElementById('date-display').innerText = todayStr;
 
     // --- GLOBAL GAME STATE ---
@@ -2270,7 +2280,7 @@
     async function submitScore(nickname) {
       let score = calculateScore();
       let avgPercent = Math.round(attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length);
-      
+
       // --- YENİ EKLENEN KONUM BULMA KODU ---
       let countryCode = 'UN'; // Varsayılan: Bilinmiyor
       try {
@@ -2348,7 +2358,7 @@
 
       scoreSubmitted = true;
       let submitBtn = document.getElementById('modal-submit-score');
-      submitBtn.disabled = true; 
+      submitBtn.disabled = true;
       submitBtn.style.pointerEvents = 'none';
       submitBtn.innerText = t('submitting');
 
