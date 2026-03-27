@@ -7,27 +7,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <title>Mazle - Daily Logic Puzzle</title>
-  <meta name="description" content="Play Mazle - A daily logic and memory puzzle game. Find the hidden path, test your spatial awareness, and compete on the global leaderboard!">
+  <meta name="description"
+    content="Play Mazle - A daily logic and memory puzzle game. Find the hidden path, test your spatial awareness, and compete on the global leaderboard!">
   <meta name="keywords" content="mazle, maze game, wordle alternative, daily puzzle, logic game, memory puzzle">
   <meta name="author" content="PlayMazle">
 
   <meta property="og:title" content="Mazle - Daily Logic Puzzle">
-  <meta property="og:description" content="Can you find the hidden path today? Play the daily maze puzzle and climb the global leaderboard!">
+  <meta property="og:description"
+    content="Can you find the hidden path today? Play the daily maze puzzle and climb the global leaderboard!">
   <meta property="og:url" content="https://playmazle.com">
   <meta property="og:type" content="website">
 
   <meta name="google-adsense-account" content="ca-pub-8418885822520229">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229" crossorigin="anonymous"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8418885822520229"
+    crossorigin="anonymous"></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-7QX5YHPT71"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-7QX5YHPT71');
-</script>
-  
-  
+    gtag('config', 'G-7QX5YHPT71');
+  </script>
+
+
   <style>
     :root {
       --bg-color: #121213;
@@ -239,7 +242,8 @@
       height: 90vw;
       max-height: 450px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      position: relative; /* Needed for absolutely-positioned golden path lines */
+      position: relative;
+      /* Needed for absolutely-positioned golden path lines */
     }
 
     #zoom-toolbar {
@@ -249,7 +253,8 @@
       justify-content: flex-end;
       align-items: center;
       gap: 8px;
-      margin: 4px 0 10px; /* Keep slightly below attempt/steps */
+      margin: 4px 0 10px;
+      /* Keep slightly below attempt/steps */
       user-select: none;
     }
 
@@ -261,7 +266,8 @@
       background: rgba(18, 18, 19, 0.65);
       cursor: pointer;
       padding: 0;
-      display: flex !important; /* override global button { display:none } */
+      display: flex !important;
+      /* override global button { display:none } */
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
@@ -278,7 +284,8 @@
       width: 18px;
       height: 18px;
       object-fit: contain;
-      pointer-events: none; /* Let the button click register */
+      pointer-events: none;
+      /* Let the button click register */
     }
 
     .theme-selector {
@@ -491,9 +498,12 @@
       padding: 0 12px;
       font-size: 13px;
       white-space: nowrap;
-      margin-top: 0; /* override global button margin */
-      text-transform: none; /* override global button uppercase */
-      letter-spacing: normal; /* override global button spacing */
+      margin-top: 0;
+      /* override global button margin */
+      text-transform: none;
+      /* override global button uppercase */
+      letter-spacing: normal;
+      /* override global button spacing */
     }
 
     .howto-btn:hover {
@@ -633,7 +643,8 @@
       padding-right: 6px;
     }
 
-    @media (max-width: 640px), (max-height: 760px) {
+    @media (max-width: 640px),
+    (max-height: 760px) {
       .modal-content {
         width: 94%;
         max-width: 520px;
@@ -935,8 +946,9 @@
       <div class="howto-example">
         <div class="howto-example-title" id="howto-example-title">Example</div>
         <div class="howto-video-wrap">
-          <video id="howto-video" controls playsinline preload="metadata"></video>
-          <div class="howto-video-hint" id="howto-video-hint">Add your video source in HTML.</div>
+          <video id="howto-video" controls playsinline preload="metadata">
+            <source src="how-to-play.mp4" type="video/mp4">
+          </video>
         </div>
       </div>
     </div>
@@ -1164,9 +1176,9 @@
 
     // Oyuncunun kendi yerel saatine göre bugünün tarihini al (YYYY-MM-DD)
     let d = new Date();
-    let todayStr = d.getFullYear() + '-' + 
-                 String(d.getMonth() + 1).padStart(2, '0') + '-' + 
-                 String(d.getDate()).padStart(2, '0');
+    let todayStr = d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
     document.getElementById('date-display').innerText = todayStr;
 
     // --- GLOBAL GAME STATE ---
@@ -2012,7 +2024,7 @@
     async function submitScore(nickname) {
       let score = calculateScore();
       let avgPercent = Math.round(attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length);
-      
+
       // --- YENİ EKLENEN KONUM BULMA KODU ---
       let countryCode = 'UN'; // Varsayılan: Bilinmiyor
       try {
@@ -2090,7 +2102,7 @@
 
       scoreSubmitted = true;
       let submitBtn = document.getElementById('modal-submit-score');
-      submitBtn.disabled = true; 
+      submitBtn.disabled = true;
       submitBtn.style.pointerEvents = 'none';
       submitBtn.innerText = t('submitting');
 
