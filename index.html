@@ -886,7 +886,9 @@
 
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 </head>
 
 <body>
@@ -1451,6 +1453,9 @@
     let finalTime = 0;
     let scoreSubmitted = false;
     let timerStarted = false;
+    let currentSessionId = null;
+    /** Dedupes concurrent startGame calls until the first move session is ready. */
+    let playSessionPromise = null;
 
     // --- 0.5 Zoom Controls ---
     let zoomScale = 1;
@@ -1998,6 +2003,8 @@
       timerStart = 0;
       finalTime = 0;
       timerStarted = false;
+      playSessionPromise = null;
+      currentSessionId = mode === 'daily' ? (localStorage.getItem('maze-session-' + todayStr) || null) : null;
       scoreSubmitted = false;
       document.getElementById('timer-display').innerText = '⏱ 0:00';
     }
@@ -2040,7 +2047,7 @@
     }
 
     // --- 6. INPUT CONTROLS ---
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', async (e) => {
       const target = e.target;
       const isTypingTarget = target && (
         target.tagName === 'INPUT' ||
@@ -2058,8 +2065,15 @@
 
       if (gameOver || isAnimating) return;
 
-      // Start timer on first move
+      // Start timer on first move — wait for server session so submitSecureScore can find it
       if (!timerStarted) {
+        try {
+          await ensurePlaySessionEstablished();
+        } catch (err) {
+          console.error("Session error:", err);
+          alert('Could not start a secure session. Check your connection and try again.');
+          return;
+        }
         timerStarted = true;
         timerStart = Date.now();
         timerInterval = setInterval(() => {
@@ -2214,6 +2228,39 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const cloudFunctions = firebase.functions();
+
+    /** Callable functions send the user's ID token; without Auth, Cloud returns 401. */
+    async function ensureAnonymousUser() {
+      const auth = firebase.auth();
+      if (auth.currentUser) return;
+      await auth.signInAnonymously();
+    }
+
+    async function ensurePlaySessionEstablished() {
+      if (playSessionPromise) return playSessionPromise;
+      playSessionPromise = (async () => {
+        await ensureAnonymousUser();
+        const result = await cloudFunctions.httpsCallable('startGame')();
+        const sid = result && result.data && result.data.sessionId;
+        if (!sid || typeof sid !== 'string') {
+          throw new Error('Invalid session from server');
+        }
+        currentSessionId = String(sid).trim();
+        if (!currentSessionId) {
+          throw new Error('Empty session from server');
+        }
+        if (currentGameMode === 'daily') {
+          localStorage.setItem('maze-session-' + todayStr, currentSessionId);
+        }
+      })();
+      try {
+        await playSessionPromise;
+      } catch (e) {
+        playSessionPromise = null;
+        throw e;
+      }
+    }
 
     function stopTimer() {
       if (timerInterval) {
@@ -2225,64 +2272,47 @@
       }
     }
 
-    function calculateScore() {
-      if (attemptScores.length === 0) return 0;
-
-      const attemptsUsed = attemptScores.length;
-      const avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptsUsed; // 0..100
-
-      // Make timer (finalTime) dominant over attempts.
-      // - timeFactor decreases with time
-      // - attemptPenalty is intentionally weak so faster solves can beat slower/extra attempts
-      const optimalSteps = Math.max(1, (goldenPathArray.length - 1));
-
-      // Clamp baseline so time has comparable weight across different maze sizes/paths.
-      const baselineSeconds = Math.min(240, Math.max(45, Math.round(optimalSteps * 0.9)));
-      const timeFactor = 1 / (1 + (finalTime / baselineSeconds));
-
-      // attemptsUsed: 1..MAX_ATTEMPTS
-      // Weak penalty: w=0.1 => 2 attempts vs 5 attempts only ~27% difference in divisor.
-      const attemptPenalty = 1 + (attemptsUsed - 1) * 0.1;
-
-      // Score scaling: accuracy (percent) still matters, but time drives ranking.
-      const accuracyFactor = avgPercent / 100; // 0..1
-      const raw = (1000 * accuracyFactor * timeFactor) / attemptPenalty;
-
-      return Math.max(0, Math.round(raw));
-    }
-
     async function submitScore(nickname) {
-      let score = calculateScore();
-      let avgPercent = Math.round(attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length);
-
-      // --- YENİ EKLENEN KONUM BULMA KODU ---
-      let countryCode = 'UN'; // Varsayılan: Bilinmiyor
-      try {
-        const res = await fetch('https://get.geojs.io/v1/ip/country.json');
-        const data = await res.json();
-        if (data && data.country) {
-          countryCode = data.country; // "TR", "US" gibi bir değer döner
-        }
-      } catch (e) {
-        console.warn('Ülke kodu alınamadı:', e);
+      const sessionId = currentSessionId ? String(currentSessionId).trim() : '';
+      if (!sessionId || sessionId === 'undefined') {
+        alert('No active game session. Move once before submitting, then try again.');
+        return null;
       }
-      // ------------------------------------
+
+      // Matematik düzeltildi: Speedhack'e takılmamak için gerçek adım sayısını kullanıyoruz
+      let avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length;
+      const cumulativeSteps = Math.max(steps, 10); // Gerçek adım (hata payı için min 10)
+      const cumulativeGreens = (cumulativeSteps * avgPercent) / 100;
+
+      function clearStaleDailySession() {
+        currentSessionId = null;
+        playSessionPromise = null;
+        try {
+          localStorage.removeItem('maze-session-' + todayStr);
+        } catch (e) { /* ignore */ }
+      }
 
       try {
-        await db.collection('scores').add({
+        await ensureAnonymousUser();
+        const result = await cloudFunctions.httpsCallable('submitSecureScore')({
+          sessionId: sessionId,
           nickname: nickname,
-          country: countryCode, // Firebase'e ülke kodunu da ekliyoruz
-          score: score,
-          accuracy: avgPercent,
-          attempts: attemptScores.length,
-          time: finalTime,
+          attemptsCount: attempts,
+          totalTilesMoved: cumulativeSteps,
+          totalGreenTiles: cumulativeGreens,
           date: todayStr,
-          mode: currentGameMode,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          mode: currentGameMode
         });
-        return score;
-      } catch (e) {
-        console.error('Score submit error:', e);
+        return result.data.score;
+      } catch (err) {
+        console.error('submitSecureScore error:', err);
+        const msg = (err && err.message) ? String(err.message) : '';
+        if (/bilet|session|eksik|missing/i.test(msg)) {
+          clearStaleDailySession();
+          alert('Your play session expired or was invalid. Refresh the page, play the daily maze once, then submit again.');
+        } else {
+          alert('Could not submit your score. Please try again.');
+        }
         return null;
       }
     }
