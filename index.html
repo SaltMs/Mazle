@@ -214,11 +214,6 @@
       border-color: #4a90e2;
     }
 
-    .mode-chip.locked {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
     body.white-mode .mode-chip {
       background: rgba(74, 144, 226, 0.08);
       color: #1e5fa8;
@@ -1036,7 +1031,6 @@
         classicBtn: "Play Classic Mode ♾️",
         modeDaily: "Daily",
         modeClassic: "Classic",
-        modeClassicLocked: "Classic mode unlocks after solving Daily.",
         streakRow: "Streak: {0} day(s)",
         restart: "Press R to restart attempt",
         lbTitle: "🏆 Leaderboard",
@@ -1073,7 +1067,6 @@
         classicBtn: "Klasik Mod Oyna ♾️",
         modeDaily: "Günlük",
         modeClassic: "Klasik",
-        modeClassicLocked: "Klasik mod, Günlük çözülünce açılır.",
         streakRow: "Seri: {0} gün",
         restart: "Başa dönmek için R'ye bas",
         lbTitle: "🏆 Liderlik Tablosu",
@@ -1111,7 +1104,6 @@
         classicBtn: "Klassik-Modus ♾️",
         modeDaily: "Täglich",
         modeClassic: "Klassik",
-        modeClassicLocked: "Klassik wird nach dem Lösen des Tagesrätsels freigeschaltet.",
         streakRow: "Serie: {0} Tag(e)",
         restart: "R drücken, um den Versuch neu zu starten",
         lbTitle: "🏆 Bestenliste",
@@ -1149,7 +1141,6 @@
         classicBtn: "Mode classique ♾️",
         modeDaily: "Quotidien",
         modeClassic: "Classique",
-        modeClassicLocked: "Le mode classique se débloque après le défi du jour.",
         streakRow: "Série : {0} jour(s)",
         restart: "Appuyez sur R pour recommencer l’essai",
         lbTitle: "🏆 Classement",
@@ -1187,7 +1178,6 @@
         classicBtn: "Modo clásico ♾️",
         modeDaily: "Diario",
         modeClassic: "Clásico",
-        modeClassicLocked: "El modo clásico se desbloquea al completar el diario.",
         streakRow: "Racha: {0} día(s)",
         restart: "Pulsa R para reiniciar el intento",
         lbTitle: "🏆 Ranking",
@@ -1335,17 +1325,12 @@
       document.getElementById('steps-taken').innerText = t('steps', steps);
     }
 
-    function isClassicUnlocked() {
-      return localStorage.getItem('maze-win-' + todayStr) === 'true';
-    }
-
     function renderModeSwitch() {
       const modeDisplay = document.getElementById('mode-display');
       if (!modeDisplay) return;
-      const unlocked = isClassicUnlocked();
       modeDisplay.innerHTML = `
         <span class="mode-chip ${currentGameMode === 'daily' ? 'active' : ''}" data-mode="daily">${t('modeDaily')}</span>
-        <span class="mode-chip ${currentGameMode === 'classic' ? 'active' : ''} ${unlocked ? '' : 'locked'}" data-mode="classic">${t('modeClassic')}${unlocked ? '' : ' 🔒'}</span>
+        <span class="mode-chip ${currentGameMode === 'classic' ? 'active' : ''}" data-mode="classic">${t('modeClassic')}</span>
       `;
     }
 
@@ -1893,7 +1878,7 @@
         document.getElementById('classic-buttons-section').style.display = 'block';
       } else {
         document.getElementById('modal-share-btn').style.display = 'inline-block';
-        document.getElementById('modal-classic-btn').style.display = isClassicUnlocked() ? 'inline-block' : 'none';
+        document.getElementById('modal-classic-btn').style.display = 'inline-block';
         document.getElementById('daily-hr').style.display = 'block';
         document.getElementById('daily-leaderboard-section').style.display = 'block';
         document.getElementById('classic-buttons-section').style.display = 'none';
@@ -2163,7 +2148,6 @@
     });
 
     document.getElementById('modal-classic-btn').addEventListener('click', () => {
-      if (!isClassicUnlocked()) return;
       document.getElementById('result-modal').style.display = 'none';
       initGame('classic');
     });
@@ -2205,16 +2189,6 @@
         return;
       }
       if (mode === 'classic') {
-        if (!isClassicUnlocked()) {
-          const toast = document.getElementById('toast');
-          toast.innerText = t('modeClassicLocked');
-          toast.classList.add('show');
-          setTimeout(() => {
-            toast.innerText = t('copied');
-            toast.classList.remove('show');
-          }, 1800);
-          return;
-        }
         if (currentGameMode !== 'classic') {
           initGame('classic');
         }
