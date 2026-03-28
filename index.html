@@ -2007,6 +2007,8 @@
       currentSessionId = mode === 'daily' ? (localStorage.getItem('maze-session-' + todayStr) || null) : null;
       scoreSubmitted = false;
       document.getElementById('timer-display').innerText = '⏱ 0:00';
+
+      schedulePlaySessionWarmup();
     }
 
     function resetCurrentAttempt() {
@@ -2259,6 +2261,25 @@
       } catch (e) {
         playSessionPromise = null;
         throw e;
+      }
+    }
+
+    /** Start auth + startGame while the user reads the board (hides cold-start on first key). */
+    function schedulePlaySessionWarmup() {
+      try {
+        if (currentGameMode === 'daily' && localStorage.getItem('maze-daily-' + todayStr) === 'done') {
+          return;
+        }
+      } catch (e) { /* ignore */ }
+      const run = () => {
+        ensurePlaySessionEstablished().catch((err) => {
+          console.warn('Session warmup failed (will retry on first move):', err);
+        });
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(run, { timeout: 2500 });
+      } else {
+        setTimeout(run, 50);
       }
     }
 
