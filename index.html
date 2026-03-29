@@ -752,12 +752,43 @@
     @media (max-width: 640px),
     (max-height: 760px) {
       body {
-        padding: 14px 12px;
+        padding: calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+      }
+
+      /* Disable absolute header controls on mobile to prevent overlap */
+      .top-left-controls,
+      .top-right-controls {
+        position: static;
+        top: auto;
+        left: auto;
+        right: auto;
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 6px 0;
+        z-index: auto;
+      }
+
+      .top-left-controls {
+        flex-wrap: wrap;
+      }
+
+      .top-right-controls {
+        flex-wrap: wrap;
       }
 
       .info-bar {
         font-size: 0.95rem;
         gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 8px;
+      }
+
+      .info-bar > div {
+        flex: 1 1 42%;
+        text-align: center;
+        min-width: 140px;
       }
 
       h1 {
@@ -766,6 +797,10 @@
 
       .subtitle {
         margin-bottom: 14px;
+      }
+
+      #mode-display {
+        margin-bottom: 10px;
       }
 
       #game-board {
