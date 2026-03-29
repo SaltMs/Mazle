@@ -99,6 +99,11 @@
       color: #111827;
     }
 
+    body.white-mode .theme-selector select option {
+      background: #ffffff;
+      color: #111827;
+    }
+
     body.white-mode .lang-selector {
       background: #ffffff;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
@@ -1167,7 +1172,11 @@
         nextMazeBtn: "Next Maze ➡️",
         backDailyBtn: "Return to Daily 🏠",
         submittedScore: "Submitted! Score: {0} pts ✅",
-        langFlagTitle: "Language"
+        langFlagTitle: "Language",
+        themeSystem: "System",
+        themeDark: "Dark",
+        themeLight: "Light",
+        themeTitle: "Theme: System / Dark / Light"
       },
       tr: {
         instructions: "Hareket: <kbd>WASD</kbd> veya <kbd>Ok Tuşları</kbd>. Başa dön: <kbd>R</kbd>.<br><br>🟩 Hedef Yol &nbsp; 🟨 Yakın (1-2 adım) &nbsp; 🟥 Uzak",
@@ -1204,7 +1213,11 @@
         nextMazeBtn: "Sonraki Labirent ➡️",
         backDailyBtn: "Günlüğe Dön 🏠",
         submittedScore: "Gönderildi! Skor: {0} puan ✅",
-        langFlagTitle: "Dil"
+        langFlagTitle: "Dil",
+        themeSystem: "Sistem",
+        themeDark: "Koyu",
+        themeLight: "Açık",
+        themeTitle: "Tema: Sistem / Koyu / Açık"
       },
       de: {
         instructions: "Bewege dich mit <kbd>WASD</kbd> oder den <kbd>Pfeiltasten</kbd>. <kbd>R</kbd> startet den Versuch neu.<br><br>🟩 Zielpfad &nbsp; 🟨 Nah (1–2 Schritte) &nbsp; 🟥 Weit",
@@ -1242,7 +1255,11 @@
         nextMazeBtn: "Nächstes Labyrinth ➡️",
         backDailyBtn: "Zurück zum Tagesrätsel 🏠",
         submittedScore: "Gesendet! Punkte: {0} ✅",
-        langFlagTitle: "Sprache"
+        langFlagTitle: "Sprache",
+        themeSystem: "System",
+        themeDark: "Dunkel",
+        themeLight: "Hell",
+        themeTitle: "Thema: System / Dunkel / Hell"
       },
       fr: {
         instructions: "Déplacez-vous avec <kbd>WASD</kbd> ou les <kbd>flèches</kbd>. <kbd>R</kbd> pour recommencer.<br><br>🟩 Chemin cible &nbsp; 🟨 Proche (1–2 pas) &nbsp; 🟥 Loin",
@@ -1280,7 +1297,11 @@
         nextMazeBtn: "Labyrinthe suivant ➡️",
         backDailyBtn: "Retour au défi du jour 🏠",
         submittedScore: "Envoyé ! Score : {0} pts ✅",
-        langFlagTitle: "Langue"
+        langFlagTitle: "Langue",
+        themeSystem: "Système",
+        themeDark: "Sombre",
+        themeLight: "Clair",
+        themeTitle: "Thème : Système / Sombre / Clair"
       },
       es: {
         instructions: "Muévete con <kbd>WASD</kbd> o las <kbd>flechas</kbd>. <kbd>R</kbd> reinicia el intento.<br><br>🟩 Ruta objetivo &nbsp; 🟨 Cerca (1–2 pasos) &nbsp; 🟥 Lejos",
@@ -1318,7 +1339,11 @@
         nextMazeBtn: "Siguiente laberinto ➡️",
         backDailyBtn: "Volver al diario 🏠",
         submittedScore: "¡Enviado! Puntuación: {0} pts ✅",
-        langFlagTitle: "Idioma"
+        langFlagTitle: "Idioma",
+        themeSystem: "Sistema",
+        themeDark: "Oscuro",
+        themeLight: "Claro",
+        themeTitle: "Tema: Sistema / Oscuro / Claro"
       }
     };
     const LANG_STORAGE_KEY = 'maze-lang';
@@ -1479,6 +1504,21 @@
       if (mobileHint) mobileHint.innerHTML = t('mobileHint');
       renderModeSwitch();
       document.getElementById('toast').innerText = t('copied');
+
+      // Theme selector i18n (options were previously hardcoded in English)
+      const themeSel = document.getElementById('theme-select');
+      if (themeSel) {
+        const optSystem = themeSel.querySelector('option[value="system"]');
+        const optDark = themeSel.querySelector('option[value="dark"]');
+        const optLight = themeSel.querySelector('option[value="light"]');
+        if (optSystem) optSystem.textContent = t('themeSystem');
+        if (optDark) optDark.textContent = t('themeDark');
+        if (optLight) optLight.textContent = t('themeLight');
+        themeSel.setAttribute('aria-label', t('themeTitle'));
+      }
+      const themeWrap = document.querySelector('.theme-selector');
+      if (themeWrap) themeWrap.title = t('themeTitle');
+
       const howtoBtn = document.getElementById('howto-btn');
       if (howtoBtn) {
         howtoBtn.title = t('howtoBtn');
@@ -2427,23 +2467,44 @@
     const howtoModal = document.getElementById('howto-modal');
     const howtoClose = document.getElementById('close-howto');
 
+    const HOWTO_SEEN_KEY = 'maze-howto-seen-v1';
+
+    function openHowtoModal(markSeen = false) {
+      if (!howtoModal) return;
+      howtoModal.style.display = 'flex';
+      if (markSeen) {
+        try { localStorage.setItem(HOWTO_SEEN_KEY, 'true'); } catch (e) { /* ignore */ }
+      }
+    }
+
+    function closeHowtoModal() {
+      if (!howtoModal) return;
+      howtoModal.style.display = 'none';
+      try { localStorage.setItem(HOWTO_SEEN_KEY, 'true'); } catch (e) { /* ignore */ }
+    }
+
     if (howtoBtn && howtoModal) {
-      howtoBtn.addEventListener('click', () => {
-        howtoModal.style.display = 'flex';
-      });
+      howtoBtn.addEventListener('click', () => openHowtoModal(true));
     }
 
     if (howtoClose && howtoModal) {
-      howtoClose.addEventListener('click', () => {
-        howtoModal.style.display = 'none';
-      });
+      howtoClose.addEventListener('click', () => closeHowtoModal());
     }
 
     window.addEventListener('click', (e) => {
       if (howtoModal && e.target === howtoModal) {
-        howtoModal.style.display = 'none';
+        closeHowtoModal();
       }
     });
+
+    // First visit: auto-open How-to-Play once
+    (function showHowtoOnFirstVisit() {
+      let seen = false;
+      try { seen = localStorage.getItem(HOWTO_SEEN_KEY) === 'true'; } catch (e) { /* ignore */ }
+      if (seen) return;
+      // Wait a tick so initial layout/texts are ready (and mobile header doesn't jump)
+      setTimeout(() => openHowtoModal(true), 250);
+    })();
 
     document.getElementById('modal-classic-btn').addEventListener('click', () => {
       document.getElementById('result-modal').style.display = 'none';
