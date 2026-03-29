@@ -1121,7 +1121,7 @@
         modeClassic: "Classic",
         streakRow: "Streak: {0} day(s)",
         restart: "Press R to restart attempt",
-        mobileHint: "Swipe on the maze or use the buttons. Tap <b>R</b> to restart the attempt.",
+        mobileHint: "Swipe on the maze or use the buttons. Hold a direction to keep moving. Tap <b>R</b> to restart the attempt.",
         lbTitle: "🏆 Leaderboard",
         lbLoading: "Loading...",
         lbEmpty: "No scores yet today. Be the first! 🚀",
@@ -1158,7 +1158,7 @@
         modeClassic: "Klasik",
         streakRow: "Seri: {0} gün",
         restart: "Başa dönmek için R'ye bas",
-        mobileHint: "Labirentte kaydır veya butonları kullan. Denemeyi sıfırlamak için <b>R</b>'ye dokun.",
+        mobileHint: "Labirentte kaydır veya butonları kullan. Aynı yönde devam etmek için yön tuşuna basılı tut. Denemeyi sıfırlamak için <b>R</b>'ye dokun.",
         lbTitle: "🏆 Liderlik Tablosu",
         lbLoading: "Yükleniyor...",
         lbEmpty: "Bugün henüz skor yok. İlk sen ol! 🚀",
@@ -1196,7 +1196,7 @@
         modeClassic: "Klassik",
         streakRow: "Serie: {0} Tag(e)",
         restart: "R drücken, um den Versuch neu zu starten",
-        mobileHint: "Wische über das Labyrinth oder nutze die Buttons. Tippe auf <b>R</b>, um den Versuch neu zu starten.",
+        mobileHint: "Wische über das Labyrinth oder nutze die Buttons. Halte eine Richtung gedrückt, um weiterzulaufen. Tippe auf <b>R</b>, um den Versuch neu zu starten.",
         lbTitle: "🏆 Bestenliste",
         lbLoading: "Lädt...",
         lbEmpty: "Heute noch keine Einträge. Sei der Erste! 🚀",
@@ -1234,7 +1234,7 @@
         modeClassic: "Classique",
         streakRow: "Série : {0} jour(s)",
         restart: "Appuyez sur R pour recommencer l’essai",
-        mobileHint: "Faites glisser sur le labyrinthe ou utilisez les boutons. Touchez <b>R</b> pour recommencer l’essai.",
+        mobileHint: "Faites glisser sur le labyrinthe ou utilisez les boutons. Maintenez une direction pour continuer à avancer. Touchez <b>R</b> pour recommencer l’essai.",
         lbTitle: "🏆 Classement",
         lbLoading: "Chargement...",
         lbEmpty: "Pas encore de scores aujourd’hui. Soyez le premier ! 🚀",
@@ -1272,7 +1272,7 @@
         modeClassic: "Clásico",
         streakRow: "Racha: {0} día(s)",
         restart: "Pulsa R para reiniciar el intento",
-        mobileHint: "Desliza en el laberinto o usa los botones. Toca <b>R</b> para reiniciar el intento.",
+        mobileHint: "Desliza en el laberinto o usa los botones. Mantén una dirección para seguir moviéndote. Toca <b>R</b> para reiniciar el intento.",
         lbTitle: "🏆 Ranking",
         lbLoading: "Cargando...",
         lbEmpty: "Aún no hay puntuaciones hoy. ¡Sé el primero! 🚀",
@@ -2153,6 +2153,54 @@
       }
     }
 
+    // Continuous move (press/hold or swipe/hold) with acceleration
+    let holdMoveTimer = null;
+    let holdMoveDx = 0;
+    let holdMoveDy = 0;
+    let holdMoveTicks = 0;
+
+    function stopHoldMove() {
+      if (holdMoveTimer) {
+        clearTimeout(holdMoveTimer);
+        holdMoveTimer = null;
+      }
+      holdMoveDx = 0;
+      holdMoveDy = 0;
+      holdMoveTicks = 0;
+    }
+
+    function scheduleNextHoldTick() {
+      // Smooth acceleration that quickly ramps then flattens (log-like)
+      // tick=0 => ~170ms, then approaches ~55ms
+      const delay = Math.max(55, Math.round(170 / Math.log2(holdMoveTicks + 2)));
+      holdMoveTimer = setTimeout(() => {
+        holdMoveTicks++;
+        tryMove(holdMoveDx, holdMoveDy);
+        if (gameOver || isAnimating) {
+          stopHoldMove();
+          return;
+        }
+        scheduleNextHoldTick();
+      }, delay);
+    }
+
+    function startHoldMove(dx, dy) {
+      if (dx === 0 && dy === 0) return;
+      // If already holding same direction, do nothing
+      if (holdMoveTimer && holdMoveDx === dx && holdMoveDy === dy) return;
+      stopHoldMove();
+      holdMoveDx = dx;
+      holdMoveDy = dy;
+      holdMoveTicks = 0;
+      // Do one immediate move, then continue
+      tryMove(dx, dy);
+      if (gameOver || isAnimating) {
+        stopHoldMove();
+        return;
+      }
+      scheduleNextHoldTick();
+    }
+
     document.addEventListener('keydown', (e) => {
       const target = e.target;
       const isTypingTarget = target && (
@@ -2186,6 +2234,7 @@
     let touchStartX = 0;
     let touchStartY = 0;
     let touchActive = false;
+    let touchHoldDirSet = false;
 
     const boardEl = document.getElementById('game-board');
     if (boardEl) {
@@ -2195,11 +2244,37 @@
         touchStartX = t.clientX;
         touchStartY = t.clientY;
         touchActive = true;
+        touchHoldDirSet = false;
       }, { passive: true });
+
+      boardEl.addEventListener('touchmove', (e) => {
+        if (!touchActive) return;
+        if (!e.touches || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        const SWIPE_MIN = 24;
+        if (!touchHoldDirSet && (absX >= SWIPE_MIN || absY >= SWIPE_MIN)) {
+          touchHoldDirSet = true;
+          if (absX > absY) {
+            startHoldMove(dx > 0 ? 1 : -1, 0);
+          } else {
+            startHoldMove(0, dy > 0 ? 1 : -1);
+          }
+        }
+        // Prevent page scroll while swiping on board
+        if (touchHoldDirSet) e.preventDefault();
+      }, { passive: false });
 
       boardEl.addEventListener('touchend', (e) => {
         if (!touchActive) return;
         touchActive = false;
+        if (touchHoldDirSet) {
+          stopHoldMove();
+          return;
+        }
         const t = e.changedTouches && e.changedTouches[0];
         if (!t) return;
 
@@ -2218,6 +2293,12 @@
           tryMove(0, dy > 0 ? 1 : -1);
         }
       }, { passive: true });
+
+      boardEl.addEventListener('touchcancel', () => {
+        touchActive = false;
+        touchHoldDirSet = false;
+        stopHoldMove();
+      }, { passive: true });
     }
 
     // On-screen D-pad controls (mobile)
@@ -2235,10 +2316,40 @@
       }, { passive: false });
     }
 
-    bindMobileBtn('mobile-up', () => tryMove(0, -1));
-    bindMobileBtn('mobile-down', () => tryMove(0, 1));
-    bindMobileBtn('mobile-left', () => tryMove(-1, 0));
-    bindMobileBtn('mobile-right', () => tryMove(1, 0));
+    function bindHoldableMoveBtn(id, dx, dy) {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      // Tap/click still works
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        tryMove(dx, dy);
+      });
+
+      // Hold-to-repeat (touch)
+      el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startHoldMove(dx, dy);
+      }, { passive: false });
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopHoldMove();
+      }, { passive: false });
+      el.addEventListener('touchcancel', () => stopHoldMove(), { passive: true });
+
+      // Hold-to-repeat (mouse)
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startHoldMove(dx, dy);
+      });
+      window.addEventListener('mouseup', () => stopHoldMove());
+      el.addEventListener('mouseleave', () => stopHoldMove());
+    }
+
+    bindHoldableMoveBtn('mobile-up', 0, -1);
+    bindHoldableMoveBtn('mobile-down', 0, 1);
+    bindHoldableMoveBtn('mobile-left', -1, 0);
+    bindHoldableMoveBtn('mobile-right', 1, 0);
     bindMobileBtn('mobile-restart', () => resetCurrentAttempt());
 
     // --- 7. SHARE RESULT ---
