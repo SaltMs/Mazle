@@ -1034,15 +1034,15 @@
 
   <div id="mobile-controls" class="mobile-controls" aria-label="Touch controls">
     <div class="mobile-controls-grid">
-      <button type="button" class="mobile-btn secondary" id="mobile-up" aria-label="Move up">↑</button>
       <div></div>
+      <button type="button" class="mobile-btn secondary" id="mobile-up" aria-label="Move up">↑</button>
       <button type="button" class="mobile-btn secondary" id="mobile-restart" aria-label="Restart attempt">R</button>
 
       <button type="button" class="mobile-btn" id="mobile-left" aria-label="Move left">←</button>
       <button type="button" class="mobile-btn" id="mobile-down" aria-label="Move down">↓</button>
       <button type="button" class="mobile-btn" id="mobile-right" aria-label="Move right">→</button>
     </div>
-    <div class="mobile-controls-hint">Swipe on the maze or use the buttons. Tap <b>R</b> to restart the attempt.</div>
+    <div class="mobile-controls-hint" id="mobile-controls-hint"></div>
   </div>
 
   <div class="instructions" id="instructions-text">
@@ -1121,6 +1121,7 @@
         modeClassic: "Classic",
         streakRow: "Streak: {0} day(s)",
         restart: "Press R to restart attempt",
+        mobileHint: "Swipe on the maze or use the buttons. Tap <b>R</b> to restart the attempt.",
         lbTitle: "🏆 Leaderboard",
         lbLoading: "Loading...",
         lbEmpty: "No scores yet today. Be the first! 🚀",
@@ -1157,6 +1158,7 @@
         modeClassic: "Klasik",
         streakRow: "Seri: {0} gün",
         restart: "Başa dönmek için R'ye bas",
+        mobileHint: "Labirentte kaydır veya butonları kullan. Denemeyi sıfırlamak için <b>R</b>'ye dokun.",
         lbTitle: "🏆 Liderlik Tablosu",
         lbLoading: "Yükleniyor...",
         lbEmpty: "Bugün henüz skor yok. İlk sen ol! 🚀",
@@ -1194,6 +1196,7 @@
         modeClassic: "Klassik",
         streakRow: "Serie: {0} Tag(e)",
         restart: "R drücken, um den Versuch neu zu starten",
+        mobileHint: "Wische über das Labyrinth oder nutze die Buttons. Tippe auf <b>R</b>, um den Versuch neu zu starten.",
         lbTitle: "🏆 Bestenliste",
         lbLoading: "Lädt...",
         lbEmpty: "Heute noch keine Einträge. Sei der Erste! 🚀",
@@ -1231,6 +1234,7 @@
         modeClassic: "Classique",
         streakRow: "Série : {0} jour(s)",
         restart: "Appuyez sur R pour recommencer l’essai",
+        mobileHint: "Faites glisser sur le labyrinthe ou utilisez les boutons. Touchez <b>R</b> pour recommencer l’essai.",
         lbTitle: "🏆 Classement",
         lbLoading: "Chargement...",
         lbEmpty: "Pas encore de scores aujourd’hui. Soyez le premier ! 🚀",
@@ -1268,6 +1272,7 @@
         modeClassic: "Clásico",
         streakRow: "Racha: {0} día(s)",
         restart: "Pulsa R para reiniciar el intento",
+        mobileHint: "Desliza en el laberinto o usa los botones. Toca <b>R</b> para reiniciar el intento.",
         lbTitle: "🏆 Ranking",
         lbLoading: "Cargando...",
         lbEmpty: "Aún no hay puntuaciones hoy. ¡Sé el primero! 🚀",
@@ -1431,6 +1436,8 @@
       }
       document.getElementById('modal-share-btn').innerText = t('shareBtn');
       document.getElementById('modal-classic-btn').innerText = t('classicBtn');
+      const mobileHint = document.getElementById('mobile-controls-hint');
+      if (mobileHint) mobileHint.innerHTML = t('mobileHint');
       renderModeSwitch();
       document.getElementById('toast').innerText = t('copied');
       const howtoBtn = document.getElementById('howto-btn');
