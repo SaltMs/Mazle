@@ -247,6 +247,7 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       position: relative;
       /* Needed for absolutely-positioned golden path lines */
+      touch-action: none; /* allow swipe controls without page scroll */
     }
 
     #zoom-toolbar {
@@ -259,6 +260,64 @@
       margin: 4px 0 10px;
       /* Keep slightly below attempt/steps */
       user-select: none;
+    }
+
+    /* Mobile touch controls (shown only on small screens) */
+    .mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 450px;
+      margin-top: 10px;
+      padding-bottom: env(safe-area-inset-bottom);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .mobile-controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 10px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .mobile-btn {
+      width: 100%;
+      min-height: 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(42, 42, 44, 0.92);
+      color: var(--text-color);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex !important; /* override any global button styles */
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .mobile-btn:active {
+      transform: translateY(1px);
+      filter: brightness(1.05);
+    }
+
+    .mobile-btn.secondary {
+      background: rgba(74, 144, 226, 0.22);
+      border-color: rgba(74, 144, 226, 0.45);
+    }
+
+    .mobile-controls-hint {
+      margin-top: 8px;
+      font-size: 0.86rem;
+      color: #818384;
+      text-align: center;
+      line-height: 1.25;
     }
 
     .zoom-btn {
@@ -692,6 +751,32 @@
 
     @media (max-width: 640px),
     (max-height: 760px) {
+      body {
+        padding: 14px 12px;
+      }
+
+      .info-bar {
+        font-size: 0.95rem;
+        gap: 10px;
+      }
+
+      h1 {
+        font-size: 1.65rem;
+      }
+
+      .subtitle {
+        margin-bottom: 14px;
+      }
+
+      #game-board {
+        width: min(94vw, 440px);
+        height: min(94vw, 440px);
+      }
+
+      .mobile-controls {
+        display: block;
+      }
+
       .modal-content {
         width: 94%;
         max-width: 520px;
@@ -946,6 +1031,19 @@
   </div>
 
   <div id="game-board"></div>
+
+  <div id="mobile-controls" class="mobile-controls" aria-label="Touch controls">
+    <div class="mobile-controls-grid">
+      <button type="button" class="mobile-btn secondary" id="mobile-up" aria-label="Move up">↑</button>
+      <div></div>
+      <button type="button" class="mobile-btn secondary" id="mobile-restart" aria-label="Restart attempt">R</button>
+
+      <button type="button" class="mobile-btn" id="mobile-left" aria-label="Move left">←</button>
+      <button type="button" class="mobile-btn" id="mobile-down" aria-label="Move down">↓</button>
+      <button type="button" class="mobile-btn" id="mobile-right" aria-label="Move right">→</button>
+    </div>
+    <div class="mobile-controls-hint">Swipe on the maze or use the buttons. Tap <b>R</b> to restart the attempt.</div>
+  </div>
 
   <div class="instructions" id="instructions-text">
     Use <kbd>WASD</kbd> or <kbd>Arrows</kbd> to move.<br><br>
@@ -2015,6 +2113,39 @@
     }
 
     // --- 6. INPUT CONTROLS ---
+    function startTimerIfNeeded() {
+      if (timerStarted) return;
+      timerStarted = true;
+      timerStart = Date.now();
+      timerInterval = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - timerStart) / 1000);
+        let mins = Math.floor(elapsed / 60);
+        let secs = elapsed % 60;
+        document.getElementById('timer-display').innerText = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function tryMove(dx, dy) {
+      if (gameOver || isAnimating) return;
+      if (dx === 0 && dy === 0) return;
+
+      startTimerIfNeeded();
+
+      let nx = playerX + dx;
+      let ny = playerY + dy;
+
+      // Wall collision
+      if (nx >= 0 && nx < W && ny >= 0 && ny < H && maze[ny][nx] === 0) {
+        let prevStep = currentAttemptPath.length > 1 ? currentAttemptPath[currentAttemptPath.length - 2] : null;
+        if (prevStep && nx === prevStep.x && ny === prevStep.y) {
+          undoPlayerPosition();
+        } else {
+          if (currentAttemptPath.some(p => p.x === nx && p.y === ny)) return; // Prevent crossing active path
+          updatePlayerPosition(nx, ny);
+        }
+      }
+    }
+
     document.addEventListener('keydown', (e) => {
       const target = e.target;
       const isTypingTarget = target && (
@@ -2033,18 +2164,6 @@
 
       if (gameOver || isAnimating) return;
 
-      // Start timer on first move — wait for server session so submitSecureScore can find it
-      if (!timerStarted) {
-        timerStarted = true;
-        timerStart = Date.now();
-        timerInterval = setInterval(() => {
-          let elapsed = Math.floor((Date.now() - timerStart) / 1000);
-          let mins = Math.floor(elapsed / 60);
-          let secs = elapsed % 60;
-          document.getElementById('timer-display').innerText = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
-        }, 1000);
-      }
-
       let dx = 0; let dy = 0;
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dy = -1;
       else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dy = 1;
@@ -2053,20 +2172,67 @@
       else if (e.key === 'r' || e.key === 'R') { resetCurrentAttempt(); return; }
       else return; // unmapped key
 
-      let nx = playerX + dx;
-      let ny = playerY + dy;
-
-      // Wall collision
-      if (nx >= 0 && nx < W && ny >= 0 && ny < H && maze[ny][nx] === 0) {
-        let prevStep = currentAttemptPath.length > 1 ? currentAttemptPath[currentAttemptPath.length - 2] : null;
-        if (prevStep && nx === prevStep.x && ny === prevStep.y) {
-          undoPlayerPosition();
-        } else {
-          if (currentAttemptPath.some(p => p.x === nx && p.y === ny)) return; // Prevent crossing active path
-          updatePlayerPosition(nx, ny);
-        }
-      }
+      tryMove(dx, dy);
     });
+
+    // Touch swipe controls on the maze
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchActive = false;
+
+    const boardEl = document.getElementById('game-board');
+    if (boardEl) {
+      boardEl.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        touchActive = true;
+      }, { passive: true });
+
+      boardEl.addEventListener('touchend', (e) => {
+        if (!touchActive) return;
+        touchActive = false;
+        const t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+
+        const dx = t.clientX - touchStartX;
+        const dy = t.clientY - touchStartY;
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+
+        // Minimum swipe threshold (pixels)
+        const SWIPE_MIN = 24;
+        if (absX < SWIPE_MIN && absY < SWIPE_MIN) return;
+
+        if (absX > absY) {
+          tryMove(dx > 0 ? 1 : -1, 0);
+        } else {
+          tryMove(0, dy > 0 ? 1 : -1);
+        }
+      }, { passive: true });
+    }
+
+    // On-screen D-pad controls (mobile)
+    function bindMobileBtn(id, handler) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        handler();
+      });
+      // Reduce touch delay on some browsers
+      el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handler();
+      }, { passive: false });
+    }
+
+    bindMobileBtn('mobile-up', () => tryMove(0, -1));
+    bindMobileBtn('mobile-down', () => tryMove(0, 1));
+    bindMobileBtn('mobile-left', () => tryMove(-1, 0));
+    bindMobileBtn('mobile-right', () => tryMove(1, 0));
+    bindMobileBtn('mobile-restart', () => resetCurrentAttempt());
 
     // --- 7. SHARE RESULT ---
     document.getElementById('modal-share-btn').addEventListener('click', () => {
