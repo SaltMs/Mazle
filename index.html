@@ -884,11 +884,6 @@
     }
   </style>
 
-  <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 </head>
 
 <body>
@@ -956,15 +951,6 @@
       <div id="modal-stats"></div>
       <button id="modal-share-btn" style="margin-bottom: 10px;">Share Today's Result 🔗</button>
       <button id="modal-classic-btn" style="background-color: #4a90e2; display: none;">Play Classic Mode ♾️</button>
-      <hr id="daily-hr" style="border-color: #3a3a3c; margin: 15px 0;">
-      <div id="daily-leaderboard-section">
-        <button id="modal-submit-score"
-          style="background-color: #b59f3b; display: inline-block; width: 100%; margin-top: 0;">Submit to Leaderboard
-          🏅</button>
-        <button id="modal-show-lb"
-          style="background-color: #3a3a3c; display: inline-block; width: 100%; margin-top: 10px;">View Leaderboard
-          🏆</button>
-      </div>
       <div id="classic-buttons-section" style="display: none;">
         <button id="modal-next-maze"
           style="background-color: #538d4e; display: inline-block; width: 100%; margin-top: 0;">Next Maze ➡️</button>
@@ -972,15 +958,6 @@
           style="background-color: #4a90e2; display: inline-block; width: 100%; margin-top: 10px;">Return to Daily
           🏠</button>
       </div>
-    </div>
-  </div>
-
-  <div id="leaderboard-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="close-lb">&times;</span>
-      <h2 id="lb-title">🏆 Leaderboard</h2>
-      <div id="lb-date" style="color: #818384; margin-bottom: 10px;"></div>
-      <div id="leaderboard-list" class="leaderboard-list"></div>
     </div>
   </div>
 
@@ -1029,7 +1006,7 @@
         statRow: "<span>Attempt {0}</span><span>{1}% Correct</span>",
         shareTitle: "Daily Mazle",
         shareRow: "Attempt {0}: {1}% Correct",
-        playNow: "Play now at [URL]",
+        playNow: "Play now at https://playmazle.com",
         classicBtn: "Play Classic Mode ♾️",
         modeDaily: "Daily",
         modeClassic: "Classic",
@@ -1065,7 +1042,7 @@
         statRow: "<span>{0}. Deneme</span><span>%{1} Doğru</span>",
         shareTitle: "Günlük Mazle",
         shareRow: "{0}. Deneme: %{1} Doğru",
-        playNow: "Hemen oyna: [URL]",
+        playNow: "Hemen oyna: https://playmazle.com",
         classicBtn: "Klasik Mod Oyna ♾️",
         modeDaily: "Günlük",
         modeClassic: "Klasik",
@@ -1102,7 +1079,7 @@
         statRow: "<span>Versuch {0}</span><span>{1}% richtig</span>",
         shareTitle: "Tägliches Maze Wordle",
         shareRow: "Versuch {0}: {1}% richtig",
-        playNow: "Jetzt spielen: [URL]",
+        playNow: "Jetzt spielen: https://playmazle.com",
         classicBtn: "Klassik-Modus ♾️",
         modeDaily: "Täglich",
         modeClassic: "Klassik",
@@ -1139,7 +1116,7 @@
         statRow: "<span>Essai {0}</span><span>{1}% correct</span>",
         shareTitle: "Maze Wordle du jour",
         shareRow: "Essai {0} : {1}% correct",
-        playNow: "Jouez sur [URL]",
+        playNow: "Jouez sur https://playmazle.com",
         classicBtn: "Mode classique ♾️",
         modeDaily: "Quotidien",
         modeClassic: "Classique",
@@ -1176,7 +1153,7 @@
         statRow: "<span>Intento {0}</span><span>{1}% acierto</span>",
         shareTitle: "Maze Wordle diario",
         shareRow: "Intento {0}: {1}% acierto",
-        playNow: "Juega en [URL]",
+        playNow: "Juega en https://playmazle.com",
         classicBtn: "Modo clásico ♾️",
         modeDaily: "Diario",
         modeClassic: "Clásico",
@@ -1345,15 +1322,6 @@
       }
       document.getElementById('modal-share-btn').innerText = t('shareBtn');
       document.getElementById('modal-classic-btn').innerText = t('classicBtn');
-      const submitBtn = document.getElementById('modal-submit-score');
-      if (submitBtn && !submitBtn.disabled && !localStorage.getItem('maze-submitted-' + todayStr)) {
-        submitBtn.innerText = t('submitScoreBtn');
-      }
-      if (submitBtn && submitBtn.disabled && localStorage.getItem('maze-submitted-' + todayStr)) {
-        submitBtn.innerText = t('alreadySubmitted');
-      }
-      const viewLbBtn = document.getElementById('modal-show-lb');
-      if (viewLbBtn) viewLbBtn.innerText = t('viewLbBtn');
       renderModeSwitch();
       document.getElementById('toast').innerText = t('copied');
       const howtoBtn = document.getElementById('howto-btn');
@@ -1451,11 +1419,7 @@
     let timerStart = 0;
     let timerInterval = null;
     let finalTime = 0;
-    let scoreSubmitted = false;
     let timerStarted = false;
-    let currentSessionId = null;
-    /** Dedupes concurrent startGame calls until the first move session is ready. */
-    let playSessionPromise = null;
 
     // --- 0.5 Zoom Controls ---
     let zoomScale = 1;
@@ -1878,14 +1842,10 @@
       if (currentGameMode === 'classic') {
         document.getElementById('modal-share-btn').style.display = 'none';
         document.getElementById('modal-classic-btn').style.display = 'none';
-        document.getElementById('daily-hr').style.display = 'none';
-        document.getElementById('daily-leaderboard-section').style.display = 'none';
         document.getElementById('classic-buttons-section').style.display = 'block';
       } else {
         document.getElementById('modal-share-btn').style.display = 'inline-block';
         document.getElementById('modal-classic-btn').style.display = 'inline-block';
-        document.getElementById('daily-hr').style.display = 'block';
-        document.getElementById('daily-leaderboard-section').style.display = 'block';
         document.getElementById('classic-buttons-section').style.display = 'none';
       }
 
@@ -2003,12 +1963,7 @@
       timerStart = 0;
       finalTime = 0;
       timerStarted = false;
-      playSessionPromise = null;
-      currentSessionId = mode === 'daily' ? (localStorage.getItem('maze-session-' + todayStr) || null) : null;
-      scoreSubmitted = false;
       document.getElementById('timer-display').innerText = '⏱ 0:00';
-
-      schedulePlaySessionWarmup();
     }
 
     function resetCurrentAttempt() {
@@ -2049,7 +2004,7 @@
     }
 
     // --- 6. INPUT CONTROLS ---
-    document.addEventListener('keydown', async (e) => {
+    document.addEventListener('keydown', (e) => {
       const target = e.target;
       const isTypingTarget = target && (
         target.tagName === 'INPUT' ||
@@ -2069,13 +2024,6 @@
 
       // Start timer on first move — wait for server session so submitSecureScore can find it
       if (!timerStarted) {
-        try {
-          await ensurePlaySessionEstablished();
-        } catch (err) {
-          console.error("Session error:", err);
-          alert('Could not start a secure session. Check your connection and try again.');
-          return;
-        }
         timerStarted = true;
         timerStart = Date.now();
         timerInterval = setInterval(() => {
@@ -2211,78 +2159,6 @@
       }
     });
 
-    // --- 8. FIREBASE & LEADERBOARD ---
-    // getFlagHTML: shared with language control (defined earlier, FlagCDN)
-
-    // Oyuncuya otomatik ve kalıcı bir Anonim ID ver
-    let playerId = localStorage.getItem('maze-player-id');
-    if (!playerId) {
-      playerId = 'Anon#' + Math.floor(1000 + Math.random() * 9000); // Örn: Anon#4829
-      localStorage.setItem('maze-player-id', playerId);
-    }
-    const firebaseConfig = {
-      apiKey: "AIzaSyA2_stQxzuOpf-f1jwYDpRc2xfncK4x0LI",
-      authDomain: "mazle-88759.firebaseapp.com",
-      projectId: "mazle-88759",
-      storageBucket: "mazle-88759.firebasestorage.app",
-      messagingSenderId: "735842920263",
-      appId: "1:735842920263:web:b879c9c0b8313dd23c0e62"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const cloudFunctions = firebase.functions();
-
-    /** Callable functions send the user's ID token; without Auth, Cloud returns 401. */
-    async function ensureAnonymousUser() {
-      const auth = firebase.auth();
-      if (auth.currentUser) return;
-      await auth.signInAnonymously();
-    }
-
-    async function ensurePlaySessionEstablished() {
-      if (playSessionPromise) return playSessionPromise;
-      playSessionPromise = (async () => {
-        await ensureAnonymousUser();
-        const result = await cloudFunctions.httpsCallable('startGame')();
-        const sid = result && result.data && result.data.sessionId;
-        if (!sid || typeof sid !== 'string') {
-          throw new Error('Invalid session from server');
-        }
-        currentSessionId = String(sid).trim();
-        if (!currentSessionId) {
-          throw new Error('Empty session from server');
-        }
-        if (currentGameMode === 'daily') {
-          localStorage.setItem('maze-session-' + todayStr, currentSessionId);
-        }
-      })();
-      try {
-        await playSessionPromise;
-      } catch (e) {
-        playSessionPromise = null;
-        throw e;
-      }
-    }
-
-    /** Start auth + startGame while the user reads the board (hides cold-start on first key). */
-    function schedulePlaySessionWarmup() {
-      try {
-        if (currentGameMode === 'daily' && localStorage.getItem('maze-daily-' + todayStr) === 'done') {
-          return;
-        }
-      } catch (e) { /* ignore */ }
-      const run = () => {
-        ensurePlaySessionEstablished().catch((err) => {
-          console.warn('Session warmup failed (will retry on first move):', err);
-        });
-      };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(run, { timeout: 2500 });
-      } else {
-        setTimeout(run, 50);
-      }
-    }
-
     function stopTimer() {
       if (timerInterval) {
         clearInterval(timerInterval);
@@ -2291,135 +2167,6 @@
       if (timerStart > 0) {
         finalTime = Math.floor((Date.now() - timerStart) / 1000);
       }
-    }
-
-    async function submitScore(nickname) {
-      const sessionId = currentSessionId ? String(currentSessionId).trim() : '';
-      if (!sessionId || sessionId === 'undefined') {
-        alert('No active game session. Move once before submitting, then try again.');
-        return null;
-      }
-
-      // Matematik düzeltildi: Speedhack'e takılmamak için gerçek adım sayısını kullanıyoruz
-      let avgPercent = attemptScores.reduce((sum, s) => sum + s.percent, 0) / attemptScores.length;
-      const cumulativeSteps = Math.max(steps, 10); // Gerçek adım (hata payı için min 10)
-      const cumulativeGreens = (cumulativeSteps * avgPercent) / 100;
-
-      function clearStaleDailySession() {
-        currentSessionId = null;
-        playSessionPromise = null;
-        try {
-          localStorage.removeItem('maze-session-' + todayStr);
-        } catch (e) { /* ignore */ }
-      }
-
-      try {
-        await ensureAnonymousUser();
-        const result = await cloudFunctions.httpsCallable('submitSecureScore')({
-          sessionId: sessionId,
-          nickname: nickname,
-          attemptsCount: attempts,
-          totalTilesMoved: cumulativeSteps,
-          totalGreenTiles: cumulativeGreens,
-          date: todayStr,
-          mode: currentGameMode
-        });
-        return result.data.score;
-      } catch (err) {
-        console.error('submitSecureScore error:', err);
-        const msg = (err && err.message) ? String(err.message) : '';
-        if (/bilet|session|eksik|missing/i.test(msg)) {
-          clearStaleDailySession();
-          alert('Your play session expired or was invalid. Refresh the page, play the daily maze once, then submit again.');
-        } else {
-          alert('Could not submit your score. Please try again.');
-        }
-        return null;
-      }
-    }
-
-    async function loadLeaderboard() {
-      const lbList = document.getElementById('leaderboard-list');
-      document.getElementById('lb-date').innerText = todayStr;
-      lbList.innerHTML = '<div style="color: #818384; padding: 20px;">' + t('lbLoading') + '</div>';
-
-      try {
-        const snapshot = await db.collection('scores')
-          .where('date', '==', todayStr)
-          .where('mode', '==', 'daily')
-          .orderBy('score', 'desc')
-          .limit(5)
-          .get();
-
-        if (snapshot.empty) {
-          lbList.innerHTML = '<div style="color: #818384; padding: 20px;">' + t('lbEmpty') + '</div>';
-          return;
-        }
-
-        lbList.innerHTML = '';
-        let rank = 0;
-        snapshot.forEach(doc => {
-          rank++;
-          let d = doc.data();
-          let mins = Math.floor(d.time / 60);
-          let secs = d.time % 60;
-          let isYou = d.nickname === playerId; // Kendi skorunu vurgulamak için
-          let flagHTML = getFlagHTML(d.country); // Bayrak resmini al
-
-          lbList.innerHTML += `<div class="lb-row ${isYou ? 'lb-you' : ''}">
-            <span class="lb-rank">#${rank}</span>
-            <span class="lb-name" style="display:flex; align-items:center;">${flagHTML} ${d.nickname}</span>
-            <span class="lb-score">${d.score} pts · ${mins}:${secs.toString().padStart(2, '0')}</span>
-          </div>`;
-        });
-      } catch (e) {
-        console.error('Leaderboard error:', e);
-        lbList.innerHTML = `<div style="color: #db4848; padding: 20px; word-break: break-all; font-size: 0.8rem;">${e.message}</div>`;
-      }
-    }
-
-    document.getElementById('modal-submit-score').addEventListener('click', async () => {
-      if (scoreSubmitted) return;
-
-      scoreSubmitted = true;
-      let submitBtn = document.getElementById('modal-submit-score');
-      submitBtn.disabled = true;
-      submitBtn.style.pointerEvents = 'none';
-      submitBtn.innerText = t('submitting');
-
-      // Artık input'tan değil, sistemin atadığı playerId'den gönderiyoruz
-      let score = await submitScore(playerId);
-
-      if (score !== null) {
-        localStorage.setItem('maze-submitted-' + todayStr, 'true');
-        submitBtn.innerText = t('submittedScore', score);
-        submitBtn.style.backgroundColor = 'var(--green-color)';
-      } else {
-        scoreSubmitted = false;
-        submitBtn.disabled = false;
-        submitBtn.style.pointerEvents = 'auto';
-        submitBtn.innerText = t('submitError');
-      }
-    });
-
-    document.getElementById('modal-show-lb').addEventListener('click', () => {
-      document.getElementById('leaderboard-modal').style.display = 'flex';
-      loadLeaderboard();
-    });
-
-    document.getElementById('close-lb').addEventListener('click', () => {
-      document.getElementById('leaderboard-modal').style.display = 'none';
-    });
-
-    // Check if already submitted today
-    // Check if already submitted today
-    if (localStorage.getItem('maze-submitted-' + todayStr)) {
-      scoreSubmitted = true;
-      let submitBtn = document.getElementById('modal-submit-score');
-      submitBtn.innerText = t('alreadySubmitted');
-      submitBtn.style.backgroundColor = 'var(--green-color)';
-      submitBtn.disabled = true;
-      submitBtn.style.pointerEvents = 'none'; // Sayfa yenilendiğinde de tıklanmaz
     }
 
     // Initial boot — check if daily already completed
