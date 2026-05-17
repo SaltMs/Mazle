@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Download Mazle</title>
+  <script>
+    (function () {
+      var appStoreUrl = 'https://apps.apple.com/sa/app/mazle-daily-mazes/id6764626094';
+      var googlePlayUrl = 'https://play.google.com/store/apps/details?id=com.Salt.playmazle';
+      var userAgent = navigator.userAgent || navigator.vendor || window.opera || '';
+      var platform = navigator.platform || '';
+      var isIPadOS = platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+      var isIOS = /iPad|iPhone|iPod/i.test(userAgent) || isIPadOS;
+      var isAndroid = /Android/i.test(userAgent);
+
+      if (isIOS) {
+        window.location.replace(appStoreUrl);
+        return;
+      }
+
+      if (isAndroid) {
+        window.location.replace(googlePlayUrl);
+      }
+    }());
+  </script>
+  <style>
+    :root {
+      --bg-color: #121213;
+      --text-color: #ffffff;
+      --muted-color: #d7dadc;
+      --panel-color: #1f2023;
+      --border-color: #3a3a3c;
+      --green-color: #538d4e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    main {
+      width: min(100%, 440px);
+      text-align: center;
+    }
+
+    img {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 0 0 24px;
+      color: var(--muted-color);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 12px;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 14px 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--panel-color);
+      color: var(--text-color);
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a.primary {
+      background: var(--green-color);
+      border-color: var(--green-color);
+    }
+
+    a:focus-visible {
+      outline: 3px solid #d7dadc;
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) {
+      a:hover {
+        border-color: var(--muted-color);
+      }
+
+      a.primary:hover {
+        border-color: #75a86f;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="favicon.png" alt="Mazle">
+    <h1>Download Mazle</h1>
+    <p>Choose your platform to download Mazle.</p>
+    <div class="buttons">
+      <a class="primary" href="https://apps.apple.com/sa/app/mazle-daily-mazes/id6764626094">Download on the App Store</a>
+      <a href="https://play.google.com/store/apps/details?id=com.Salt.playmazle">Get it on Google Play</a>
+    </div>
+  </main>
+</body>
+</html>
