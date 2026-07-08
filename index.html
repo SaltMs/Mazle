@@ -788,6 +788,64 @@
       padding-right: 6px;
     }
 
+    #app-promo-modal .modal-content {
+      max-width: 460px;
+      padding: 28px 24px 24px;
+    }
+
+    .app-promo-icon {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 14px;
+      display: block;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .app-promo-copy {
+      margin: 0 0 18px;
+      color: #d7dadc;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    body.white-mode .app-promo-copy {
+      color: #4b5563;
+    }
+
+    .app-promo-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .app-promo-btn {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      margin-top: 0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: normal;
+      line-height: 1.2;
+      text-decoration: none;
+      text-transform: none;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+    }
+
+    .app-promo-btn.secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-color);
+    }
+
+    body.white-mode .app-promo-btn.secondary {
+      border-color: rgba(17, 24, 39, 0.18);
+    }
+
     @media (max-width: 640px),
     (max-height: 760px) {
       body {
@@ -884,6 +942,11 @@
 
       #howto-video {
         max-width: 100%;
+      }
+
+      #app-promo-modal .modal-content {
+        width: 94vw;
+        padding: 22px 16px 18px;
       }
     }
 
@@ -1164,6 +1227,19 @@
     </div>
   </div>
 
+  <div id="app-promo-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="app-promo-title">
+    <div class="modal-content">
+      <span class="close-btn" id="close-app-promo">&times;</span>
+      <img class="app-promo-icon" src="favicon.png" alt="Mazle">
+      <h2 id="app-promo-title">Get the full Mazle experience</h2>
+      <p id="app-promo-copy" class="app-promo-copy"></p>
+      <div class="app-promo-actions">
+        <a id="app-promo-download" class="app-promo-btn" href="Download.html">Download the mobile app</a>
+        <button type="button" id="app-promo-continue" class="app-promo-btn secondary">Continue on web</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast">Copied to clipboard!</div>
   <a class="download-mobile-link" href="Download.html">Download Mobile</a>
   <div id="contact-footer">
@@ -1213,6 +1289,10 @@
         themeSystem: "System",
         themeDark: "Dark",
         themeLight: "Light",
+        appPromoTitle: "Get the full Mazle experience",
+        appPromoCopy: "Playmazle.com is a prototype web version of the mobile game Mazle - Daily Mazes. For the newest puzzles, smoother gameplay, and the best Mazle experience, download the mobile app.",
+        appPromoDownload: "Download the mobile app",
+        appPromoContinue: "Continue on web",
         themeTitle: "Theme: System / Dark / Light"
       },
       tr: {
@@ -1254,6 +1334,10 @@
         themeSystem: "Sistem",
         themeDark: "Koyu",
         themeLight: "Açık",
+        appPromoTitle: "Mazle deneyiminin tamamını keşfet",
+        appPromoCopy: "Playmazle.com, Mazle - Daily Mazes mobil oyununun prototip web sürümüdür. En güncel bulmacalar, daha akıcı oynanış ve en iyi Mazle deneyimi için mobil uygulamayı indir.",
+        appPromoDownload: "Mobil uygulamayı indir",
+        appPromoContinue: "Web'de devam et",
         themeTitle: "Tema: Sistem / Koyu / Açık"
       },
       de: {
@@ -1296,6 +1380,10 @@
         themeSystem: "System",
         themeDark: "Dunkel",
         themeLight: "Hell",
+        appPromoTitle: "Hol dir das volle Mazle-Erlebnis",
+        appPromoCopy: "Playmazle.com ist eine Prototyp-Webversion des Mobile Games Mazle - Daily Mazes. Lade die mobile App herunter, um die neuesten Rätsel, flüssigeres Gameplay und das beste Mazle-Erlebnis zu erhalten.",
+        appPromoDownload: "Mobile App herunterladen",
+        appPromoContinue: "Im Web weiterspielen",
         themeTitle: "Thema: System / Dunkel / Hell"
       },
       fr: {
@@ -1338,6 +1426,10 @@
         themeSystem: "Système",
         themeDark: "Sombre",
         themeLight: "Clair",
+        appPromoTitle: "Profitez de l'expérience Mazle complète",
+        appPromoCopy: "Playmazle.com est une version web prototype du jeu mobile Mazle - Daily Mazes. Pour les derniers puzzles, un jeu plus fluide et la meilleure expérience Mazle, téléchargez l'application mobile.",
+        appPromoDownload: "Télécharger l'application",
+        appPromoContinue: "Continuer sur le web",
         themeTitle: "Thème : Système / Sombre / Clair"
       },
       es: {
@@ -1380,6 +1472,10 @@
         themeSystem: "Sistema",
         themeDark: "Oscuro",
         themeLight: "Claro",
+        appPromoTitle: "Disfruta la experiencia completa de Mazle",
+        appPromoCopy: "Playmazle.com es una versión web prototipo del juego móvil Mazle - Daily Mazes. Para tener los puzzles más recientes, una experiencia más fluida y lo mejor de Mazle, descarga la app móvil.",
+        appPromoDownload: "Descargar la app móvil",
+        appPromoContinue: "Continuar en la web",
         themeTitle: "Tema: Sistema / Oscuro / Claro"
       },
       pt: {
@@ -1422,6 +1518,10 @@
         themeSystem: "Sistema",
         themeDark: "Escuro",
         themeLight: "Claro",
+        appPromoTitle: "Tenha a experiência completa do Mazle",
+        appPromoCopy: "Playmazle.com é uma versão web protótipo do jogo mobile Mazle - Daily Mazes. Para os puzzles mais recentes, uma jogabilidade mais fluida e a melhor experiência Mazle, baixe o app mobile.",
+        appPromoDownload: "Baixar o app mobile",
+        appPromoContinue: "Continuar na web",
         themeTitle: "Tema: Sistema / Escuro / Claro"
       },
       nl: {
@@ -1464,6 +1564,10 @@
         themeSystem: "Systeem",
         themeDark: "Donker",
         themeLight: "Licht",
+        appPromoTitle: "Krijg de volledige Mazle-ervaring",
+        appPromoCopy: "Playmazle.com is een prototype-webversie van de mobiele game Mazle - Daily Mazes. Download de mobiele app voor de nieuwste puzzels, soepelere gameplay en de beste Mazle-ervaring.",
+        appPromoDownload: "Download de mobiele app",
+        appPromoContinue: "Doorgaan op het web",
         themeTitle: "Thema: Systeem / Donker / Licht"
       },
       zh: {
@@ -1506,6 +1610,10 @@
         themeSystem: "系统",
         themeDark: "深色",
         themeLight: "浅色",
+        appPromoTitle: "体验完整的 Mazle",
+        appPromoCopy: "Playmazle.com 是移动游戏 Mazle - Daily Mazes 的网页原型版。想获得最新谜题、更流畅的玩法和最佳 Mazle 体验，请下载移动应用。",
+        appPromoDownload: "下载移动应用",
+        appPromoContinue: "继续使用网页版",
         themeTitle: "主题：系统 / 深色 / 浅色"
       },
       ja: {
@@ -1548,6 +1656,10 @@
         themeSystem: "システム",
         themeDark: "ダーク",
         themeLight: "ライト",
+        appPromoTitle: "Mazleをもっと快適に楽しむ",
+        appPromoCopy: "Playmazle.comは、モバイルゲーム Mazle - Daily Mazes のプロトタイプWeb版です。最新のパズル、よりスムーズな操作、最高のMazle体験にはモバイルアプリをダウンロードしてください。",
+        appPromoDownload: "モバイルアプリをダウンロード",
+        appPromoContinue: "Web版で続ける",
         themeTitle: "テーマ：システム / ダーク / ライト"
       },
       ru: {
@@ -1590,6 +1702,10 @@
         themeSystem: "Система",
         themeDark: "Темная",
         themeLight: "Светлая",
+        appPromoTitle: "Получите полную версию Mazle",
+        appPromoCopy: "Playmazle.com — это прототип веб-версии мобильной игры Mazle - Daily Mazes. Чтобы получать новые головоломки, более плавный игровой процесс и лучший опыт Mazle, скачайте мобильное приложение.",
+        appPromoDownload: "Скачать мобильное приложение",
+        appPromoContinue: "Продолжить в веб-версии",
         themeTitle: "Тема: Система / Темная / Светлая"
       },
       ko: {
@@ -1632,6 +1748,10 @@
         themeSystem: "시스템",
         themeDark: "다크",
         themeLight: "라이트",
+        appPromoTitle: "Mazle 전체 경험 즐기기",
+        appPromoCopy: "Playmazle.com은 모바일 게임 Mazle - Daily Mazes의 프로토타입 웹 버전입니다. 최신 퍼즐, 더 부드러운 플레이, 최고의 Mazle 경험을 위해 모바일 앱을 다운로드하세요.",
+        appPromoDownload: "모바일 앱 다운로드",
+        appPromoContinue: "웹에서 계속하기",
         themeTitle: "테마: 시스템 / 다크 / 라이트"
       }
     };
@@ -1827,6 +1947,14 @@
       if (nextMazeBtn) nextMazeBtn.innerText = t('nextMazeBtn');
       const backDailyBtn = document.getElementById('modal-back-daily');
       if (backDailyBtn) backDailyBtn.innerText = t('backDailyBtn');
+      const appPromoTitle = document.getElementById('app-promo-title');
+      if (appPromoTitle) appPromoTitle.innerText = t('appPromoTitle');
+      const appPromoCopy = document.getElementById('app-promo-copy');
+      if (appPromoCopy) appPromoCopy.innerText = t('appPromoCopy');
+      const appPromoDownload = document.getElementById('app-promo-download');
+      if (appPromoDownload) appPromoDownload.innerText = t('appPromoDownload');
+      const appPromoContinue = document.getElementById('app-promo-continue');
+      if (appPromoContinue) appPromoContinue.innerText = t('appPromoContinue');
       updateLangFlagDisplay();
 
       if (gameOver) {
@@ -2759,8 +2887,18 @@ if (window.navigator && window.navigator.vibrate) {
     const howtoBtn = document.getElementById('howto-btn');
     const howtoModal = document.getElementById('howto-modal');
     const howtoClose = document.getElementById('close-howto');
+    const appPromoModal = document.getElementById('app-promo-modal');
+    const appPromoClose = document.getElementById('close-app-promo');
+    const appPromoContinue = document.getElementById('app-promo-continue');
 
     const HOWTO_SEEN_KEY = 'maze-howto-seen-v1';
+    const APP_PROMO_SEEN_KEY = 'maze-app-promo-seen-session-v1';
+
+    function shouldOpenHowtoOnFirstVisit() {
+      let seen = false;
+      try { seen = localStorage.getItem(HOWTO_SEEN_KEY) === 'true'; } catch (e) { /* ignore */ }
+      return !seen;
+    }
 
     function openHowtoModal(markSeen = false) {
       if (!howtoModal) return;
@@ -2774,6 +2912,20 @@ if (window.navigator && window.navigator.vibrate) {
       if (!howtoModal) return;
       howtoModal.style.display = 'none';
       try { localStorage.setItem(HOWTO_SEEN_KEY, 'true'); } catch (e) { /* ignore */ }
+    }
+
+    function openAppPromoModal() {
+      if (!appPromoModal) return;
+      appPromoModal.style.display = 'flex';
+      try { sessionStorage.setItem(APP_PROMO_SEEN_KEY, 'true'); } catch (e) { /* ignore */ }
+    }
+
+    function closeAppPromoModal() {
+      if (!appPromoModal) return;
+      appPromoModal.style.display = 'none';
+      if (shouldOpenHowtoOnFirstVisit()) {
+        setTimeout(() => openHowtoModal(true), 180);
+      }
     }
 
     if (howtoBtn && howtoModal) {
@@ -2790,12 +2942,35 @@ if (window.navigator && window.navigator.vibrate) {
       }
     });
 
-    // First visit: auto-open How-to-Play once
-    (function showHowtoOnFirstVisit() {
+    if (appPromoClose && appPromoModal) {
+      appPromoClose.addEventListener('click', () => closeAppPromoModal());
+    }
+
+    if (appPromoContinue && appPromoModal) {
+      appPromoContinue.addEventListener('click', () => closeAppPromoModal());
+    }
+
+    window.addEventListener('click', (e) => {
+      if (appPromoModal && e.target === appPromoModal) {
+        closeAppPromoModal();
+      }
+    });
+
+    // Site entry: show the mobile-app prompt once per browser session.
+    (function showAppPromoOnEntry() {
       let seen = false;
-      try { seen = localStorage.getItem(HOWTO_SEEN_KEY) === 'true'; } catch (e) { /* ignore */ }
+      try { seen = sessionStorage.getItem(APP_PROMO_SEEN_KEY) === 'true'; } catch (e) { /* ignore */ }
       if (seen) return;
       // Wait a tick so initial layout/texts are ready (and mobile header doesn't jump)
+      setTimeout(() => openAppPromoModal(), 250);
+    })();
+
+    // First visit: auto-open How-to-Play once, after the app prompt is dismissed.
+    (function showHowtoOnFirstVisit() {
+      if (!shouldOpenHowtoOnFirstVisit()) return;
+      let promoSeen = false;
+      try { promoSeen = sessionStorage.getItem(APP_PROMO_SEEN_KEY) === 'true'; } catch (e) { /* ignore */ }
+      if (!promoSeen) return;
       setTimeout(() => openHowtoModal(true), 250);
     })();
 
